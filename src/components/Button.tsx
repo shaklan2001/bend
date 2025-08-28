@@ -18,7 +18,7 @@ export default function Button({
     className = '',
     ...props
 }: ButtonProps) {
-    const baseClasses = 'rounded-xl font-semibold items-center justify-center';
+    const baseClasses = 'rounded-full font-semibold items-center justify-center';
 
     const variantClasses = {
         primary: 'bg-blue-600 active:bg-blue-700',

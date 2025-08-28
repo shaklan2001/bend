@@ -1,6 +1,6 @@
 import { View, Text, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
-import Button from '../../src/components/Button';
+import Button from '../../components/Button';
 
 export default function OnboardingScreen() {
     const router = useRouter();

@@ -1,4 +1,4 @@
-import '../global.css';
+import '../../global.css';
 import { SplashScreen } from 'expo-router';
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';

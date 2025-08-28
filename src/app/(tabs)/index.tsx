@@ -1,5 +1,5 @@
 import { View, Text, SafeAreaView, ScrollView } from 'react-native';
-import WelcomeCard from '../../src/components/WelcomeCard';
+import WelcomeCard from '../../components/WelcomeCard';
 import { StatusBar } from 'expo-status-bar';
 
 export default function HomeScreen() {
