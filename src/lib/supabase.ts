@@ -15,4 +15,48 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     // RN doesn’t use URL fragments for auth:
     detectSessionInUrl: false,
   },
-})
+});
+
+export const checkOnboardingStatus = async () => {
+  try {
+    const hasCompletedOnboarding = await AsyncStorage.getItem('hasCompletedOnboarding');
+    const onboardingData = await AsyncStorage.getItem('onboardingData');
+
+    if (hasCompletedOnboarding === 'true' && onboardingData) {
+      const parsedData = JSON.parse(onboardingData);
+      return {
+        completed: parsedData.onboarding_completed || false,
+        data: parsedData
+      };
+    }
+    return { completed: false, data: null };
+  } catch (error) {
+    console.error('Error checking onboarding status:', error);
+    return { completed: false, data: null };
+  }
+};
+
+export const getOnboardingData = async () => {
+  try {
+    const onboardingData = await AsyncStorage.getItem('onboardingData');
+    if (onboardingData) {
+      return JSON.parse(onboardingData);
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting onboarding data:', error);
+    return null;
+  }
+};
+
+export const clearOnboardingData = async () => {
+  try {
+    await AsyncStorage.removeItem('onboardingData');
+    await AsyncStorage.removeItem('hasCompletedOnboarding');
+    console.log('Onboarding data cleared');
+    return true;
+  } catch (error) {
+    console.error('Error clearing onboarding data:', error);
+    return false;
+  }
+};

@@ -29,6 +29,80 @@
     "plugins": [
       "expo-router"
     ],
-    "scheme": "bendapp"
+    "scheme": "bendapp",
+    "fonts": [
+      {
+        "asset": "./assets/fonts/Metropolis-Thin.otf",
+        "family": "Metropolis-Thin"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-ThinItalic.otf",
+        "family": "Metropolis-ThinItalic"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-ExtraLight.otf",
+        "family": "Metropolis-ExtraLight"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-ExtraLightItalic.otf",
+        "family": "Metropolis-ExtraLightItalic"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-Light.otf",
+        "family": "Metropolis-Light"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-LightItalic.otf",
+        "family": "Metropolis-LightItalic"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-Regular.otf",
+        "family": "Metropolis-Regular"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-RegularItalic.otf",
+        "family": "Metropolis-RegularItalic"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-Medium.otf",
+        "family": "Metropolis-Medium"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-MediumItalic.otf",
+        "family": "Metropolis-MediumItalic"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-SemiBold.otf",
+        "family": "Metropolis-SemiBold"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-SemiBoldItalic.otf",
+        "family": "Metropolis-SemiBoldItalic"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-Bold.otf",
+        "family": "Metropolis-Bold"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-BoldItalic.otf",
+        "family": "Metropolis-BoldItalic"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-ExtraBold.otf",
+        "family": "Metropolis-ExtraBold"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-ExtraBoldItalic.otf",
+        "family": "Metropolis-ExtraBoldItalic"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-Black.otf",
+        "family": "Metropolis-Black"
+      },
+      {
+        "asset": "./assets/fonts/Metropolis-BlackItalic.otf",
+        "family": "Metropolis-BlackItalic"
+      }
+    ]
   }
 }
