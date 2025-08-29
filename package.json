@@ -13,6 +13,7 @@
     "@supabase/supabase-js": "^2.56.0",
     "expo": "~53.0.22",
     "expo-haptics": "^14.1.4",
+    "expo-linear-gradient": "^14.1.5",
     "expo-router": "^5.1.4",
     "expo-status-bar": "~2.2.3",
     "nativewind": "^4.1.23",

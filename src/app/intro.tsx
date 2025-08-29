@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, memo } from 'react';
 import Button from '../components/Button';
 import { FontStyles } from '../lib/fonts';
 import { checkOnboardingStatus } from '../lib/supabase';
+import LogInSheet from '../components/HomePage/LogInSheet';
 
 const CircleStep = memo(({ circleScale }: { circleScale: Animated.Value }) => (
     <View className="flex-1 justify-center items-center">
@@ -61,61 +62,87 @@ const ReferralCodeModal = memo(({
     visible,
     onClose,
     referralCode,
-    setReferralCode
+    setReferralCode,
+    onLogin
 }: {
     visible: boolean;
     onClose: () => void;
     referralCode: string;
     setReferralCode: (code: string) => void;
+    onLogin: () => void;
 }) => (
     <Modal
         visible={visible}
         transparent
-        animationType="fade"
+        animationType="none"
         onRequestClose={onClose}
     >
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            className="flex-1"
-        >
-            <View className="flex-1 justify-end bg-black/50">
-                <View className="bg-white rounded-t-3xl px-6 py-12 min-h-[400px]">
-                    <View className="items-center mb-8">
-                        <View className="w-12 h-1 bg-gray-300 rounded-full mb-4" />
-                        <Text style={[FontStyles.heading3, { color: '#000000' }]}>
-                            Enter Referral Code
-                        </Text>
-                    </View>
+        <View className="flex-1 bg-white">
+            <SafeAreaView style={{ flex: 1 }}>
+                <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-100">
+                    <TouchableOpacity
+                        onPress={onClose}
+                        style={{
+                            padding: 8,
+                        }}
+                        activeOpacity={0.7}
+                    >
+                        <Text style={{ fontSize: 24, color: '#6B7280' }}>✕</Text>
+                    </TouchableOpacity>
 
-                    <TextInput
-                        value={referralCode}
-                        onChangeText={setReferralCode}
-                        className="w-full px-4 py-4 border border-gray-300 rounded-full text-center text-lg bg-white mb-8"
-                        placeholder="Referral Code"
-                        placeholderTextColor="#9CA3AF"
-                        autoFocus
-                    />
+                    <Text style={[FontStyles.heading2, {
+                        color: '#000000',
+                        fontWeight: '700',
+                        flex: 1,
+                        textAlign: 'center',
+                    }]}>
+                        Enter Referral Code
+                    </Text>
 
-                    <View className="flex-row space-x-4">
-                        <Button
-                            title="Cancel"
-                            onPress={onClose}
-                            variant="outline"
-                            className="flex-1 py-3 px-6 rounded-full border-2"
-                            style={{ borderColor: '#E5E7EB' }}
-                            textClassName="text-gray-600 text-base font-semibold"
-                        />
-                        <Button
-                            title="Apply"
-                            onPress={onClose}
-                            className="py-3 px-6 rounded-full"
-                            style={{ backgroundColor: '#A69B8A' }}
-                            textClassName="text-white text-base font-semibold"
-                        />
-                    </View>
+                    <View style={{ width: 40 }} />
                 </View>
-            </View>
-        </KeyboardAvoidingView>
+
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={{ flex: 1 }}
+                >
+                    <View className="flex-1 px-6 py-6">
+                        <Text style={[FontStyles.bodyMedium, {
+                            color: '#6B7280',
+                            textAlign: 'center',
+                            marginBottom: 40,
+                            lineHeight: 22,
+                        }]}>
+                            Enter your referral code to get started.
+                        </Text>
+
+                        <View className="mb-16">
+                            <TextInput
+                                value={referralCode}
+                                onChangeText={setReferralCode}
+                                className="w-full px-4 py-4 border-2 border-gray-300 rounded-2xl text-center text-lg bg-white"
+                                placeholder="Referral Code"
+                                placeholderTextColor="#9CA3AF"
+                                autoFocus
+                                style={{
+                                    borderColor: '#E5E7EB',
+                                    fontSize: 16,
+                                    color: '#000000',
+                                }}
+                            />
+                        </View>
+
+                        <Button
+                            title="Apply Code"
+                            onPress={onClose}
+                            className="py-4 px-8 rounded-full w-full mb-16"
+                            style={{ backgroundColor: '#A69B8A' }}
+                            textClassName="text-white text-lg font-semibold tracking-wider"
+                        />
+                    </View>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
+        </View>
     </Modal>
 ));
 
@@ -124,6 +151,7 @@ export default function IntroScreen() {
     const [currentStep, setCurrentStep] = useState(0);
     const [referralCode, setReferralCode] = useState('');
     const [showReferralModal, setShowReferralModal] = useState(false);
+    const [showLoginSheet, setShowLoginSheet] = useState(false);
     const [onboardingCompleted, setOnboardingCompleted] = useState(false);
 
     const circleScale = useRef(new Animated.Value(0)).current;
@@ -147,11 +175,12 @@ export default function IntroScreen() {
     }, []);
 
     const handleGetStarted = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         router.push('/(onboarding)');
     };
 
     const handleLogin = () => {
-        console.log('Login pressed');
+        setShowLoginSheet(true);
     };
 
     const handleReferralCodePress = () => {
@@ -160,6 +189,19 @@ export default function IntroScreen() {
 
     const closeReferralModal = () => {
         setShowReferralModal(false);
+    };
+
+    const handleLoginFromReferral = () => {
+        setShowReferralModal(false);
+        setShowLoginSheet(true);
+    };
+
+    const closeLoginSheet = () => {
+        setShowLoginSheet(false);
+    };
+
+    const handleSwitchToCreateAccount = () => {
+        console.log('Switch to create account');
     };
 
     useEffect(() => {
@@ -205,9 +247,7 @@ export default function IntroScreen() {
             ]).start(() => {
                 setCurrentStep(2);
 
-                // Only proceed to step 3 if onboarding is not completed
                 if (!onboardingCompleted) {
-                    // Show buttons for incomplete onboarding
                     setTimeout(() => {
                         Animated.timing(finalScreenOpacity, {
                             toValue: 1,
@@ -218,7 +258,6 @@ export default function IntroScreen() {
                         });
                     }, 1500);
                 } else {
-                    // Navigate to home screen after animation for completed onboarding
                     setTimeout(() => {
                         router.push('/(tabs)');
                     }, 1000);
@@ -309,6 +348,13 @@ export default function IntroScreen() {
                 onClose={closeReferralModal}
                 referralCode={referralCode}
                 setReferralCode={setReferralCode}
+                onLogin={handleLoginFromReferral}
+            />
+
+            <LogInSheet
+                visible={showLoginSheet}
+                onClose={closeLoginSheet}
+                onSwitchToCreateAccount={handleSwitchToCreateAccount}
             />
         </SafeAreaView>
     );
