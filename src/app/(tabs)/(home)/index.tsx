@@ -4,11 +4,12 @@ import { useRouter } from 'expo-router';
 import { Fonts, FontStyles } from '../../../lib/fonts';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo } from 'react';
+import YogaCarousel from '../../../components/YogaCarousel';
 
 
 const HomeHeader = memo(({ day, month, dayName, handleProfilePress }: { day: number, month: string, dayName: string, handleProfilePress: () => void }) => {
     return (
-        <View className="px-6 pt-4 pb-6 ">
+        <View className="px-6 pt-4 ">
         <View className="flex-row justify-between items-start border-b border-gray-200 pb-4">
             <View className="flex-1">
                 <Text style={[FontStyles.bodyMedium, { color: '#9CA3AF', marginBottom: 4, fontWeight: '600' }]}>
@@ -77,14 +78,7 @@ const Home = () => {
             <StatusBar style="dark" />
 
             <HomeHeader day={day} month={month} dayName={dayName} handleProfilePress={handleProfilePress} />
-
-            <ScrollView className="flex-1 px-6">
-                <View className="pb-20">
-                    <Text style={[FontStyles.bodyLarge, { color: '#6B7280', textAlign: 'center' }]}>
-                        Content will be added here
-                    </Text>
-                </View>
-            </ScrollView>
+            <YogaCarousel />
         </SafeAreaView>
     );
 };

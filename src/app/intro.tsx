@@ -204,7 +204,7 @@ export default function IntroScreen() {
                 })
             ]).start(() => {
                 setCurrentStep(2);
-                
+
                 // Only proceed to step 3 if onboarding is not completed
                 if (!onboardingCompleted) {
                     // Show buttons for incomplete onboarding
