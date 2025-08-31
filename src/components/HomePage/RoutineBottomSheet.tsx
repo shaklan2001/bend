@@ -36,6 +36,19 @@ interface Routine {
     exercises?: Exercise[];
 }
 
+// Union type for both Routine and SavedRoutine
+type RoutineCardData = Routine | {
+    id: string;
+    name: string;
+    description: string;
+    total_duration_minutes: number;
+    body_part_id: string;
+    slug: string;
+    image_url?: string;
+    exercises?: Exercise[];
+    savedAt?: number;
+};
+
 interface RoutineBottomSheetProps {
     visible: boolean;
     onClose: () => void;
@@ -48,7 +61,10 @@ interface RoutineBottomSheetProps {
     isLoading?: boolean;
 }
 
-const RoutineCard = memo(({ routine, onPress }: { routine: Routine, onPress: (routine: Routine) => void }) => {
+export const RoutineCard = memo(({ routine, onPress }: {
+    routine: RoutineCardData,
+    onPress: (routine: RoutineCardData) => void
+}) => {
     return (
         <TouchableOpacity
             onPress={() => {
@@ -172,7 +188,7 @@ const RoutineBottomSheet: React.FC<RoutineBottomSheetProps> = memo(({
         });
     }, [onClose, slideAnim, fadeAnim]);
 
-    const handleRoutinePress = useCallback((routine: Routine) => {
+    const handleRoutinePress = useCallback((routine: RoutineCardData) => {
         router.push(`/routine/${routine.slug}`);
         handleClose();
     }, [router, handleClose]);

@@ -193,10 +193,10 @@ function TabsLayout() {
                     }}
                 />
                 <Tabs.Screen
-                    name="customRoutine"
+                    name="saveLibrary"
                     options={{
-                        tabBarLabel: "Menu",
-                        title: "Menu",
+                        tabBarLabel: "Save Library",
+                        title: "Save Library",
                         tabBarIcon: ({ focused }) => (
                             <BookmarkIcon isFocused={focused} />
                         ),
@@ -215,10 +215,10 @@ function TabsLayout() {
                     }}
                 />
                 <Tabs.Screen
-                    name="saveLibrary"
+                    name="customRoutine"
                     options={{
-                        tabBarLabel: "Save Library",
-                        title: "Save Library",
+                        tabBarLabel: "Custom Routine",
+                        title: "Custom Routine",
                         tabBarIcon: ({ focused }) => (
                             <GearIcon isFocused={focused} />
                         ),

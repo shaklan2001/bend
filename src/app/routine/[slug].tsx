@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, memo, useCallback, useMemo } from 'react';
 import {
     View,
     Text,
@@ -7,15 +7,17 @@ import {
     TouchableOpacity,
     Image,
     Share,
+    Pressable,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Entypo, MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontStyles } from '../../lib/fonts';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '../../lib/supabase';
 import { LinearGradient } from 'expo-linear-gradient';
-
+import Feather from '@expo/vector-icons/Feather';
+import { saveRoutine, removeRoutine, isRoutineSaved, SavedRoutine } from '../../lib/saveRoutine';
 
 interface Exercise {
     id: string;
@@ -31,6 +33,8 @@ interface Routine {
     description: string;
     total_duration_minutes: number;
     body_part_id: string;
+    slug: string;
+    image_url?: string;
 }
 
 interface RoutineExercise {
@@ -42,21 +46,121 @@ interface RoutineExercise {
     exercise: Exercise;
 }
 
-const ExerciseCard = ({ exercise, duration, sequence }: {
+const Header = memo(({ handleBack, routine }: { handleBack: () => void, routine: Routine }) => {
+    return (
+        <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-100">
+            <TouchableOpacity
+                onPress={handleBack}
+                style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}
+                activeOpacity={0.7}
+            >
+                <Entypo name="cross" size={34} color="#D3D3D3" />
+            </TouchableOpacity>
+
+            <View className="flex-1 items-center">
+                <Text style={[FontStyles.heading2, {
+                    color: '#000000',
+                    fontWeight: '700',
+                    textAlign: 'center',
+                    opacity: 0.8
+                }]}>
+                    {routine.name}
+                </Text>
+            </View>
+
+            <View className="w-10" />
+        </View>
+    );
+});
+
+const DurationControls = memo(({ duration, onDurationChange }: {
+    duration: number,
+    onDurationChange: (increment: boolean) => void
+}) => {
+    const handleDecrease = useCallback(() => {
+        onDurationChange(false);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }, [onDurationChange]);
+
+    const handleIncrease = useCallback(() => {
+        onDurationChange(true);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }, [onDurationChange]);
+
+    return (
+        <View className="items-center">
+            <Text style={[FontStyles.bodyMedium, {
+                color: '#6B7280',
+                fontWeight: '600',
+                marginBottom: 8,
+            }]}>
+                {Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}
+            </Text>
+            <View className="flex-row items-center space-x-2 gap-2">
+                <TouchableOpacity
+                    onPress={handleDecrease}
+                    style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                        backgroundColor: '#FFFFFF',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        elevation: 3,
+                    }}
+                    activeOpacity={0.7}
+                >
+                    <MaterialCommunityIcons name="minus" size={16} color="#6B7280" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={handleIncrease}
+                    style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                        backgroundColor: '#F3F4F6',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        elevation: 3,
+                    }}
+                    activeOpacity={0.7}
+                >
+                    <MaterialCommunityIcons name="plus" size={16} color="#6B7280" />
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+});
+
+const ExerciseCard = memo(({ exercise, duration, sequence }: {
     exercise: Exercise,
     duration: number,
     sequence: number
 }) => {
     const [durationValue, setDurationValue] = useState(duration);
 
-    const handleDurationChange = (increment: boolean) => {
+    const handleDurationChange = useCallback((increment: boolean) => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         if (increment) {
-            setDurationValue(prev => Math.min(prev + 30, 300)); // Max 5 minutes
+            setDurationValue(prev => Math.min(prev + 15, 300));
         } else {
-            setDurationValue(prev => Math.max(prev - 30, 15)); // Min 15 seconds
+            setDurationValue(prev => Math.max(prev - 15, 15));
         }
-    };
+    }, []);
 
     return (
         <View style={{
@@ -103,48 +207,175 @@ const ExerciseCard = ({ exercise, duration, sequence }: {
                 </Text>
             </View>
 
-            <View className="items-center">
-                <Text style={[FontStyles.bodyMedium, {
-                    color: '#6B7280',
-                    fontWeight: '600',
-                    marginBottom: 8,
-                }]}>
-                    {Math.floor(durationValue / 60)}:{(durationValue % 60).toString().padStart(2, '0')}
-                </Text>
-                <View className="flex-row items-center space-x-2">
-                    <TouchableOpacity
-                        onPress={() => handleDurationChange(false)}
-                        style={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: 16,
-                            backgroundColor: '#F3F4F6',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}
-                        activeOpacity={0.7}
-                    >
-                        <MaterialCommunityIcons name="minus" size={16} color="#6B7280" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => handleDurationChange(true)}
-                        style={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: 16,
-                            backgroundColor: '#F3F4F6',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}
-                        activeOpacity={0.7}
-                    >
-                        <MaterialCommunityIcons name="plus" size={16} color="#6B7280" />
-                    </TouchableOpacity>
-                </View>
-            </View>
+            <DurationControls duration={durationValue} onDurationChange={handleDurationChange} />
         </View>
     );
-};
+});
+
+const RoutineInfo = memo(({ isFavorite, routine, totalMinutes, onPressFavorite }: {
+    isFavorite: boolean,
+    routine: Routine,
+    totalMinutes: number,
+    onPressFavorite: () => void
+}) => (
+    <View className="items-center">
+        <View className="flex-row items-center justify-between w-full">
+            <View className="w-10" />
+            <Text style={[FontStyles.heading3, {
+                color: '#6B7280',
+                fontWeight: '600'
+            }]}>
+                {totalMinutes} minutes
+            </Text>
+            <Pressable onPress={onPressFavorite}>
+                <Feather
+                    name="heart"
+                    size={20}
+                    color={isFavorite ? "#EF4444" : "#6B7280"}
+                    fill={isFavorite ? "#EF4444" : "none"}
+                />
+            </Pressable>
+        </View>
+        {routine.description && (
+            <Text style={[FontStyles.bodyMedium, {
+                color: '#6B7280',
+                marginBottom: 24,
+                lineHeight: 24,
+                marginTop: 8,
+            }]}>
+                {routine.description}
+            </Text>
+        )}
+    </View>
+));
+
+const SectionTitle = memo(() => (
+    <Text style={[FontStyles.bodyMedium, {
+        color: '#A69B8A',
+        fontWeight: '700',
+        marginBottom: 20,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        fontSize: 16,
+    }]}>
+        EXERCISES
+    </Text>
+));
+
+const ShareButton = memo(({ onPress }: { onPress: () => void }) => (
+    <TouchableOpacity
+        onPress={onPress}
+        style={{
+            backgroundColor: '#FFFFFF',
+            borderWidth: 2,
+            borderColor: '#E5E7EB',
+            borderRadius: 50,
+            paddingVertical: 16,
+            marginBottom: 12,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+        }}
+        activeOpacity={0.7}
+    >
+        <MaterialCommunityIcons
+            name="share-variant"
+            size={24}
+            color="#6B7280"
+            style={{ marginRight: 8 }}
+        />
+        <Text style={{ color: '#6B7280', fontWeight: '600', fontSize: 16 }}>
+            Share Routine
+        </Text>
+    </TouchableOpacity>
+));
+
+const StartButton = memo(({ onPress }: { onPress: () => void }) => (
+    <TouchableOpacity
+        onPress={onPress}
+        style={{
+            borderRadius: 50,
+            paddingVertical: 16,
+            overflow: 'hidden',
+        }}
+        activeOpacity={0.7}
+    >
+        <LinearGradient
+            colors={['#3B82F6', '#1D4ED8']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                borderRadius: 12,
+            }}
+        />
+        <Text style={{
+            color: '#FFFFFF',
+            fontSize: 18,
+            fontWeight: '700',
+            textAlign: 'center',
+        }}>
+            START
+        </Text>
+    </TouchableOpacity>
+));
+
+const LoadingState = memo(() => (
+    <SafeAreaView className="flex-1 bg-white">
+        <StatusBar style="dark" />
+        <View className="flex-1 justify-center items-center">
+            <Text style={[FontStyles.bodyLarge, { color: '#9CA3AF' }]}>
+                Loading routine...
+            </Text>
+        </View>
+    </SafeAreaView>
+));
+
+const ErrorState = memo(({ error, onBack }: { error: string, onBack: () => void }) => (
+    <SafeAreaView className="flex-1 bg-white">
+        <StatusBar style="dark" />
+        <View className="flex-1 justify-center items-center px-6">
+            <MaterialCommunityIcons
+                name="alert-circle"
+                size={64}
+                color="#EF4444"
+            />
+            <Text style={[FontStyles.heading2, {
+                color: '#EF4444',
+                textAlign: 'center',
+                marginTop: 16
+            }]}>
+                {error || 'Routine not found'}
+            </Text>
+            <TouchableOpacity
+                onPress={onBack}
+                style={{
+                    marginTop: 24,
+                    paddingHorizontal: 24,
+                    paddingVertical: 12,
+                    backgroundColor: '#EF4444',
+                    borderRadius: 8,
+                }}
+                activeOpacity={0.7}
+            >
+                <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                    Go Back
+                </Text>
+            </TouchableOpacity>
+        </View>
+    </SafeAreaView>
+));
+
+const ActionButtons = memo(({ onShare, onStart }: { onShare: () => void, onStart: () => void }) => (
+    <View className="px-6 py-4 bg-transparent">
+        <ShareButton onPress={onShare} />
+        <StartButton onPress={onStart} />
+    </View>
+));
 
 const RoutineDetail = () => {
     const { slug } = useLocalSearchParams();
@@ -153,14 +384,9 @@ const RoutineDetail = () => {
     const [exercises, setExercises] = useState<RoutineExercise[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isFavorite, setIsFavorite] = useState(false);
 
-    useEffect(() => {
-        if (slug) {
-            fetchRoutineData();
-        }
-    }, [slug]);
-
-    const fetchRoutineData = async () => {
+    const fetchRoutineData = useCallback(async () => {
         try {
             setIsLoading(true);
             setError(null);
@@ -178,6 +404,12 @@ const RoutineDetail = () => {
             }
 
             setRoutine(routineData);
+
+            // Check if routine is already saved
+            if (routineData) {
+                const saved = await isRoutineSaved(routineData.id);
+                setIsFavorite(saved);
+            }
 
             const { data: exerciseData, error: exerciseError } = await supabase
                 .from('routine_exercises')
@@ -223,13 +455,19 @@ const RoutineDetail = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [slug]);
 
-    const handleStartRoutine = () => {
+    useEffect(() => {
+        if (slug) {
+            fetchRoutineData();
+        }
+    }, [slug, fetchRoutineData]);
+
+    const handleStartRoutine = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    };
+    }, []);
 
-    const handleShareRoutine = async () => {
+    const handleShareRoutine = useCallback(async () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
         try {
@@ -242,125 +480,79 @@ const RoutineDetail = () => {
         } catch (error) {
             console.error('Error sharing routine:', error);
         }
-    };
+    }, [slug, routine?.name]);
 
-    const handleBack = () => {
+    const handleBack = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         router.back();
-    };
+    }, [router]);
+
+    const handlePressFavorite = useCallback(async () => {
+        if (!routine) return;
+
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+        try {
+            if (isFavorite) {
+                // Remove from favorites
+                const success = await removeRoutine(routine.id);
+                if (success) {
+                    setIsFavorite(false);
+                }
+            } else {
+                // Add to favorites
+                const routineToSave: Omit<SavedRoutine, 'savedAt'> = {
+                    id: routine.id,
+                    name: routine.name,
+                    description: routine.description,
+                    total_duration_minutes: routine.total_duration_minutes,
+                    body_part_id: routine.body_part_id,
+                    slug: routine.slug,
+                    image_url: routine.image_url,
+                };
+
+                const success = await saveRoutine(routineToSave);
+                if (success) {
+                    setIsFavorite(true);
+                }
+            }
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
+        }
+    }, [routine, isFavorite]);
+
+    const totalDuration = useMemo(() =>
+        exercises.reduce((sum, ex) => sum + ex.duration_seconds, 0),
+        [exercises]
+    );
+
+    const totalMinutes = useMemo(() =>
+        Math.floor(totalDuration / 60),
+        [totalDuration]
+    );
 
     if (isLoading) {
-        return (
-            <SafeAreaView className="flex-1 bg-white">
-                <StatusBar style="dark" />
-                <View className="flex-1 justify-center items-center">
-                    <Text style={[FontStyles.bodyLarge, { color: '#9CA3AF' }]}>
-                        Loading routine...
-                    </Text>
-                </View>
-            </SafeAreaView>
-        );
+        return <LoadingState />;
     }
 
     if (error || !routine) {
-        return (
-            <SafeAreaView className="flex-1 bg-white">
-                <StatusBar style="dark" />
-                <View className="flex-1 justify-center items-center px-6">
-                    <MaterialCommunityIcons
-                        name="alert-circle"
-                        size={64}
-                        color="#EF4444"
-                    />
-                    <Text style={[FontStyles.heading2, {
-                        color: '#EF4444',
-                        textAlign: 'center',
-                        marginTop: 16
-                    }]}>
-                        {error || 'Routine not found'}
-                    </Text>
-                    <TouchableOpacity
-                        onPress={handleBack}
-                        style={{
-                            marginTop: 24,
-                            paddingHorizontal: 24,
-                            paddingVertical: 12,
-                            backgroundColor: '#EF4444',
-                            borderRadius: 8,
-                        }}
-                        activeOpacity={0.7}
-                    >
-                        <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>
-                            Go Back
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            </SafeAreaView>
-        );
+        return <ErrorState error={error || ''} onBack={handleBack} />;
     }
-
-    const totalDuration = exercises.reduce((sum, ex) => sum + ex.duration_seconds, 0);
-    const totalMinutes = Math.floor(totalDuration / 60);
 
     return (
         <SafeAreaView className="flex-1 bg-white">
             <StatusBar style="dark" />
 
-            <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-100">
-                <TouchableOpacity
-                    onPress={handleBack}
-                    style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 20,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                    }}
-                    activeOpacity={0.7}
-                >
-                    <MaterialCommunityIcons name="arrow-left" size={24} color="#6B7280" />
-                </TouchableOpacity>
-
-                <View className="flex-1 items-center">
-                    <Text style={[FontStyles.heading2, {
-                        color: '#000000',
-                        fontWeight: '700',
-                        textAlign: 'center',
-                        opacity: 0.8
-                    }]}>
-                        {routine.name}
-                    </Text>
-                </View>
-            </View>
+            <Header handleBack={handleBack} routine={routine} />
 
             <ScrollView className="flex-1 px-6 py-4" showsVerticalScrollIndicator={false}>
-                    <Text style={[FontStyles.bodyMedium, {
-                        color: '#6B7280',
-                        fontWeight: '500',
-                        marginTop: 4
-                    }]}>
-                        {totalMinutes} minutes
-                    </Text>
-                {routine.description && (
-                    <Text style={[FontStyles.bodyMedium, {
-                        color: '#6B7280',
-                        marginBottom: 24,
-                        lineHeight: 24,
-                    }]}>
-                        {routine.description}
-                    </Text>
-                )}
-
-                <Text style={[FontStyles.bodyMedium, {
-                    color: '#A69B8A',
-                    fontWeight: '700',
-                    marginBottom: 20,
-                    textTransform: 'uppercase',
-                    letterSpacing: 0.5,
-                    fontSize: 16,
-                }]}>
-                    EXERCISES
-                </Text>
+                <RoutineInfo
+                    routine={routine}
+                    totalMinutes={totalMinutes}
+                    onPressFavorite={handlePressFavorite}
+                    isFavorite={isFavorite}
+                />
+                <SectionTitle />
 
                 {exercises.map((routineExercise, index) => (
                     <ExerciseCard
@@ -372,65 +564,7 @@ const RoutineDetail = () => {
                 ))}
             </ScrollView>
 
-            <View className="px-6 py-4 border-t border-gray-100">
-                <TouchableOpacity
-                    onPress={handleShareRoutine}
-                    style={{
-                        backgroundColor: '#FFFFFF',
-                        borderWidth: 1,
-                        borderColor: '#E5E7EB',
-                        borderRadius: 12,
-                        paddingVertical: 16,
-                        marginBottom: 12,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
-                    activeOpacity={0.7}
-                >
-                    <MaterialCommunityIcons
-                        name="share-variant"
-                        size={20}
-                        color="#6B7280"
-                        style={{ marginRight: 8 }}
-                    />
-                    <Text style={{ color: '#6B7280', fontWeight: '600' }}>
-                        Share Routine
-                    </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    onPress={handleStartRoutine}
-                    style={{
-                        borderRadius: 12,
-                        paddingVertical: 16,
-                        overflow: 'hidden',
-                    }}
-                    activeOpacity={0.7}
-                >
-                    <LinearGradient
-                        colors={['#3B82F6', '#1D4ED8']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            borderRadius: 12,
-                        }}
-                    />
-                    <Text style={{
-                        color: '#FFFFFF',
-                        fontSize: 18,
-                        fontWeight: '700',
-                        textAlign: 'center',
-                    }}>
-                        START
-                    </Text>
-                </TouchableOpacity>
-            </View>
+            <ActionButtons onShare={handleShareRoutine} onStart={handleStartRoutine} />
         </SafeAreaView>
     );
 };
