@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Fonts, FontStyles } from '../../../lib/fonts';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import YogaCarousel from '../../../components/HomePage/YogaCarousel';
 import SearchModal from '../../../components/SearchModal';
 import BrowseByArea from '../../../components/HomePage/BrowseByArea';
@@ -11,6 +11,14 @@ import RecommendedRoutines from '../../../components/HomePage/RecommendedRoutine
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { supabase } from '../../../lib/supabase';
+
+interface AreaCard {
+    id: string;
+    name: string;
+    image_url: string;
+    created_at: string;
+}
 
 const HomeHeader = memo(({ day, month, dayName, handleProfilePress, handleResetPress }: {
     day: number,
@@ -141,7 +149,61 @@ const SearchButton = memo(({ handleSearchPress }: { handleSearchPress: () => voi
 
 const Home = () => {
     const router = useRouter();
+    const [bodyParts, setBodyParts] = useState<AreaCard[]>([]);
     const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
+    const [isLoadingBodyParts, setIsLoadingBodyParts] = useState(true);
+    const [bodyPartsError, setBodyPartsError] = useState<string | null>(null);
+
+    async function getBodyParts() {
+        try {
+            setIsLoadingBodyParts(true);
+            setBodyPartsError(null);
+
+            const { data: testData, error: testError } = await supabase
+                .from('body_parts')
+                .select('count')
+                .limit(1);
+
+            if (testError) {
+                console.error('Supabase connection test failed:', testError);
+                setBodyPartsError('Database connection failed');
+                return;
+            }
+
+            console.log('Supabase connection successful, fetching body parts...');
+
+            const { data, error } = await supabase
+                .from('body_parts')
+                .select('*');
+
+            if (error) {
+                console.error('Error fetching body parts:', error);
+                setBodyPartsError('Failed to load body parts');
+            } else {
+                console.log('Body Parts:', data);
+                setBodyParts(data || []);
+            }
+        } catch (error) {
+            console.error('Unexpected error:', error);
+            setBodyPartsError('Something went wrong');
+        } finally {
+            setIsLoadingBodyParts(false);
+        }
+    };
+
+
+    useEffect(() => {
+        getBodyParts();
+    }, []);
+
+    useEffect(() => {
+        console.log('Home component state:', {
+            bodyPartsCount: bodyParts.length,
+            isLoadingBodyParts,
+            bodyPartsError,
+            bodyParts: bodyParts
+        });
+    }, [bodyParts, isLoadingBodyParts, bodyPartsError]);
 
     const getCurrentDate = () => {
         const now = new Date();
@@ -207,7 +269,12 @@ const Home = () => {
                 />
                 <YogaCarousel />
                 <SearchButton handleSearchPress={handleSearchPress} />
-                <BrowseByArea />
+                <BrowseByArea
+                    bodyParts={bodyParts}
+                    isLoading={isLoadingBodyParts}
+                    error={bodyPartsError}
+                    onRetry={getBodyParts}
+                />
                 <RecommendedRoutines />
 
             </ScrollView>
