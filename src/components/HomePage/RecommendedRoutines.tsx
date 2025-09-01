@@ -2,59 +2,14 @@ import React, { memo, useRef, useCallback } from "react";
 import { View, Text, ScrollView, Dimensions, Animated, Image, TouchableOpacity } from "react-native";
 import { FontStyles } from '../../lib/fonts';
 import * as Haptics from 'expo-haptics';
+import { router } from "expo-router";
+import { recommendedData, RoutineCard } from "../../lib/constant";
 
-const { width: screenWidth } = Dimensions.get('window');
 const CARD_WIDTH = 230;
 const CARD_HEIGHT = 160;
 const SPACING = 16;
 const FOCUSED_SCALE = 1;
 const ADJACENT_SCALE = 0.95;
-
-interface RoutineCard {
-    id: number;
-    title: string;
-    duration: string;
-    image: any;
-    backgroundColor: string;
-}
-
-const recommendedData: RoutineCard[] = [
-    {
-        id: 1,
-        title: "Tech Neck",
-        duration: "5 MINUTES",
-        image: require('../../../assets/yoga/Gemini_Generated_Image_l6zc7cl6zc7cl6zc (1).png'),
-        backgroundColor: '#A69B8A'
-    },
-    {
-        id: 2,
-        title: "Pelvic Tilt",
-        duration: "7 MINUTES",
-        image: require('../../../assets/yoga/Gemini_Generated_Image_fgc5gyfgc5gyfgc5.png'),
-        backgroundColor: '#A69B8A'
-    },
-    {
-        id: 3,
-        title: "Shoulders 1",
-        duration: "5 MINUTES",
-        image: require('../../../assets/yoga/Gemini_Generated_Image_l6zc7cl6zc7cl6zc (2).png'),
-        backgroundColor: '#A69B8A'
-    },
-    {
-        id: 4,
-        title: "Lower Back",
-        duration: "8 MINUTES",
-        image: require('../../../assets/yoga/Gemini_Generated_Image_l6zc7cl6zc7cl6zc.png'),
-        backgroundColor: '#A69B8A'
-    },
-    {
-        id: 5,
-        title: "Hip Flexors",
-        duration: "6 MINUTES",
-        image: require('../../../assets/yoga/images_1.png'),
-        backgroundColor: '#A69B8A'
-    }
-];
 
 const RecommendedCard = memo(({ data, index, scrollX }: {
     data: RoutineCard,
@@ -83,7 +38,7 @@ const RecommendedCard = memo(({ data, index, scrollX }: {
 
     const handleCardPress = () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        console.log(`Selected routine: ${data.title}`);
+        router.push(`/routine/${data.slug}`);
     };
 
     return (
@@ -176,7 +131,6 @@ const RecommendedRoutines = () => {
         }, 0);
     }, []);
 
-    const sideOffset = (screenWidth - CARD_WIDTH) / 2;
 
     return (
         <View style={{ paddingVertical: 10 }}>

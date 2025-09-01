@@ -5,8 +5,8 @@ import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontStyles } from '../../../lib/fonts';
 import ActionButton from '../../../components/ActionButton';
-import CreateAccountSheet from '../../../components/HomePage/CreateAccountSheet';
-import LogInSheet from '../../../components/HomePage/LogInSheet';
+import CreateAccountSheet from '../../../components/Shared/CreateAccountSheet';
+import LogInSheet from '../../../components/Shared/LogInSheet';
 import * as Haptics from 'expo-haptics';
 
 const ProfileFooter = memo(() => {

@@ -36,7 +36,6 @@ interface Routine {
     exercises?: Exercise[];
 }
 
-// Union type for both Routine and SavedRoutine
 type RoutineCardData = Routine | {
     id: string;
     name: string;

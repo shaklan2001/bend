@@ -32,14 +32,14 @@ const AreaCardComponent = memo(({
         className="bg-transparent rounded-2xl p-4 mr-4 w-[140px] h-[110px] items-center justify-center border-2 border-[#A69B8A66]"
         activeOpacity={0.7}
     >
-        <View className="w-[55px] h-[55px] rounded-full bg-[#A69B8A3A] justify-center items-center mb-3 overflow-hidden mt-1.5">
+        <View className="w-[45px] h-[45px] rounded-full bg-[#A69B8A3A] justify-center items-center mb-3 overflow-hidden mt-1.5">
             <Image
                 source={{ uri: area?.image_url }}
                 className="w-full h-full rounded-full"
                 resizeMode="cover"
             />
         </View>
-        <Text className="text-sm font-bold text-black -mt-2.5 text-center">
+        <Text className="text-m font-bold text-black -mt-2 text-center">
             {area.name}
         </Text>
     </TouchableOpacity>

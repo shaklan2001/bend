@@ -4,92 +4,9 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Fonts, FontStyles } from '../../lib/fonts';
 import * as Haptics from 'expo-haptics';
+import { AnswerKey, screens } from '../../lib/constant';
+import { NextButton } from '@src/components/Shared/NextButton';
 
-type ScreenType = 'info' | 'single-choice-question' | 'multi-choice-question';
-type AnswerKey = 'stretchTime' | 'painAreas' | 'activityLevel' | 'goals' | 'experienceLevel' | 'consultationType';
-
-interface Screen {
-    type: ScreenType;
-    title: string;
-    subtitle?: string;
-    key?: AnswerKey;
-    options?: string[];
-    image?: ImageSourcePropType
-}
-
-const screens: Screen[] = [
-    {
-        type: 'info',
-        title: 'Welcome to Bend',
-        subtitle: 'Our mission is to help you stretch every day.',
-    },
-    {
-        type: 'info',
-        title: 'Stretching is important.',
-        subtitle: 'Every time you stretch, you invest in your long-term health and longevity.',
-        image: require('../../../assets/yoga/images_2.png')
-    },
-    {
-        type: 'info',
-        title: 'You\'re in the right place.',
-        subtitle: 'Whether you\'re younger or older, a beginner or an expert — our simple, daily routines are designed for everyone.',
-        image: require('../../../assets/yoga/Gemini_Generated_Image_l6zc7cl6zc7cl6zc (1).png')
-    },
-    {
-        type: 'info',
-        title: 'Consistency is key.',
-        subtitle: 'It\'s important to stretch every day. Bend is a simple way to make stretching a part of your daily routine.',
-        image: require('../../../assets/yoga/Gemini_Generated_Image_l6zc7cl6zc7cl6zc (2).png')
-    },
-    {
-        type: 'single-choice-question',
-        key: 'stretchTime',
-        title: 'When is a good time for your daily stretch?',
-        subtitle: 'Choose an option to continue',
-        options: ['After waking up', 'After morning coffee or tea', 'After exercising', 'Before showering', 'During work break', 'Before going to bed', 'Other'],
-    },
-    {
-        type: 'multi-choice-question',
-        key: 'painAreas',
-        title: 'Which areas of your body experience pain or discomfort?',
-        subtitle: 'This helps us recommend safe exercises',
-        options: ['Neck & Shoulders', 'Lower Back', 'Hips & Glutes', 'Knees', 'Ankles & Feet', 'Wrists & Hands', 'No pain currently'],
-    },
-    {
-        type: 'single-choice-question',
-        key: 'activityLevel',
-        title: 'How active are you currently?',
-        subtitle: 'Be honest - this helps us create the right routine',
-        options: ['Very active (exercise 4+ times/week)', 'Moderately active (exercise 2-3 times/week)', 'Lightly active (exercise 1-2 times/week)', 'Sedentary (little to no exercise)', 'Recovering from injury'],
-    },
-    {
-        type: 'multi-choice-question',
-        key: 'goals',
-        title: 'What are your main stretching goals?',
-        subtitle: 'Select all that apply',
-        options: ['Reduce pain & stiffness', 'Improve flexibility', 'Better posture', 'Recovery after exercise', 'Stress relief', 'Injury prevention', 'General wellness'],
-    },
-    {
-        type: 'single-choice-question',
-        key: 'experienceLevel',
-        title: 'What\'s your experience with stretching?',
-        subtitle: 'This helps us set the right difficulty level',
-        options: ['Complete beginner', 'Some experience', 'Intermediate', 'Advanced', 'Professional athlete'],
-    },
-    {
-        type: 'single-choice-question',
-        key: 'consultationType',
-        title: 'What type of recommendations would you prefer?',
-        subtitle: 'Choose your consultation style',
-        options: ['AI-powered personalized routines', 'Expert-curated programs', 'Community recommendations', 'Hybrid approach (AI + expert review)'],
-    },
-    {
-        type: 'info',
-        title: 'Thanks for sharing.',
-        subtitle: 'We\'ll let you know which exercises to be cautious about.',
-        image: require('../../../assets/yoga/images_1.png')
-    },
-];
 
 const InfoScreen = memo(({ title, subtitle, image }: { title: string; subtitle: string; image?: ImageSourcePropType }) => (
     <View style={{ alignItems: 'center', paddingBottom: 120 }}>
@@ -243,40 +160,6 @@ const BackButton = memo(({ onPress }: { onPress: () => void }) => (
     </TouchableOpacity>
 ));
 
-const NextButton = memo(({ onPress }: { onPress: () => void }) => (
-    <TouchableOpacity
-        onPress={onPress}
-        activeOpacity={0.7}
-        style={{
-            width: '100%',
-            backgroundColor: '#F8F9FA',
-            paddingVertical: 18,
-            paddingHorizontal: 32,
-            borderRadius: 56,
-            shadowColor: '#000',
-            shadowOffset: {
-                width: 0,
-                height: 6,
-            },
-            shadowOpacity: 0.24,
-            shadowRadius: 12,
-            elevation: 6,
-            borderWidth: 1,
-            borderColor: '#E9ECEF',
-        }}
-    >
-        <Text style={[FontStyles.button, {
-            color: '#6C757D',
-            textAlign: 'center',
-            textTransform: 'uppercase',
-            letterSpacing: 1.2,
-            fontWeight: '500',
-            fontSize: 16,
-        }]}>
-            Next
-        </Text>
-    </TouchableOpacity>
-));
 
 const TapToContinue = memo(({ onPress }: { onPress: () => void }) => (
     <TouchableOpacity

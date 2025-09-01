@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { FontStyles } from '../../../lib/fonts';
 import * as Haptics from 'expo-haptics';
+import CustomModal from '@src/components/CustomeRoute/CustomModal';
 
 const TriangularPatternIcon = memo(() => (
   <View className="items-center mb-6">
@@ -38,7 +39,7 @@ const CreateRoutineCard = memo(({ onPress }: { onPress: () => void }) => {
   return (
     <TouchableOpacity
       onPress={handlePress}
-      className="mx-8 px-4 py-8 items-center mt-8"
+      className="mx-8 px-4 py-4 items-center mt-8"
       style={{
         backgroundColor: '#F9FAFB',
         borderRadius: 50,
@@ -89,8 +90,14 @@ const Header = memo(() => (
 ));
 
 const CustomRoutine = () => {
+  const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
+
   const handleCreateRoutine = useCallback(() => {
-    console.log('Create routine tapped');
+    setIsBottomSheetVisible(true);
+  }, []);
+
+  const handleCloseBottomSheet = useCallback(() => {
+    setIsBottomSheetVisible(false);
   }, []);
 
   return (
@@ -100,6 +107,11 @@ const CustomRoutine = () => {
       <View className="flex-1">
         <CreateRoutineCard onPress={handleCreateRoutine} />
       </View>
+
+      <CustomModal
+        visible={isBottomSheetVisible}
+        onClose={handleCloseBottomSheet}
+      />
     </SafeAreaView>
   );
 };

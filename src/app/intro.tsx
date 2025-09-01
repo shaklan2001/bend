@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, memo } from 'react';
 import Button from '../components/Button';
 import { FontStyles } from '../lib/fonts';
 import { checkOnboardingStatus } from '../lib/supabase';
-import LogInSheet from '../components/HomePage/LogInSheet';
+import LogInSheet from '../components/Shared/LogInSheet';
 
 const CircleStep = memo(({ circleScale }: { circleScale: Animated.Value }) => (
     <View className="flex-1 justify-center items-center">
