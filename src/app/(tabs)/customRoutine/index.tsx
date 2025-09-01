@@ -9,16 +9,13 @@ import { StatusBar } from 'expo-status-bar';
 import { FontStyles } from '../../../lib/fonts';
 import * as Haptics from 'expo-haptics';
 
-// Memoized Triangular Pattern Icon Component
 const TriangularPatternIcon = memo(() => (
   <View className="items-center mb-6">
-    {/* Top circle */}
     <View
       className="w-8 h-8 rounded-full mb-3"
       style={{ backgroundColor: '#A69B8A3A' }}
     />
 
-    {/* Bottom two circles */}
     <View className="flex-row space-x-6 gap-4">
       <View
         className="w-8 h-8 rounded-full"
@@ -32,7 +29,6 @@ const TriangularPatternIcon = memo(() => (
   </View>
 ));
 
-// Memoized Create Routine Card Component
 const CreateRoutineCard = memo(({ onPress }: { onPress: () => void }) => {
   const handlePress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -81,7 +77,6 @@ const CreateRoutineCard = memo(({ onPress }: { onPress: () => void }) => {
   );
 });
 
-// Memoized Header Component
 const Header = memo(() => (
   <View className="flex-row items-center justify-center px-6 py-4 border-b border-gray-100">
     <Text style={[FontStyles.heading1, {

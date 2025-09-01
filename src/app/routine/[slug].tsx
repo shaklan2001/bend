@@ -15,9 +15,10 @@ import { Entypo, MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontStyles } from '../../lib/fonts';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '../../lib/supabase';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import Feather from '@expo/vector-icons/Feather';
 import { saveRoutine, removeRoutine, isRoutineSaved, SavedRoutine } from '../../lib/saveRoutine';
+import { GradientButton, ShareButton } from '../../components/Button';
 
 interface Exercise {
     id: string;
@@ -262,68 +263,6 @@ const SectionTitle = memo(() => (
     </Text>
 ));
 
-const ShareButton = memo(({ onPress }: { onPress: () => void }) => (
-    <TouchableOpacity
-        onPress={onPress}
-        style={{
-            backgroundColor: '#FFFFFF',
-            borderWidth: 2,
-            borderColor: '#E5E7EB',
-            borderRadius: 50,
-            paddingVertical: 16,
-            marginBottom: 12,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-        }}
-        activeOpacity={0.7}
-    >
-        <MaterialCommunityIcons
-            name="share-variant"
-            size={24}
-            color="#6B7280"
-            style={{ marginRight: 8 }}
-        />
-        <Text style={{ color: '#6B7280', fontWeight: '600', fontSize: 16 }}>
-            Share Routine
-        </Text>
-    </TouchableOpacity>
-));
-
-const StartButton = memo(({ onPress }: { onPress: () => void }) => (
-    <TouchableOpacity
-        onPress={onPress}
-        style={{
-            borderRadius: 50,
-            paddingVertical: 16,
-            overflow: 'hidden',
-        }}
-        activeOpacity={0.7}
-    >
-        <LinearGradient
-            colors={['#3B82F6', '#1D4ED8']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                borderRadius: 12,
-            }}
-        />
-        <Text style={{
-            color: '#FFFFFF',
-            fontSize: 18,
-            fontWeight: '700',
-            textAlign: 'center',
-        }}>
-            START
-        </Text>
-    </TouchableOpacity>
-));
-
 const LoadingState = memo(() => (
     <SafeAreaView className="flex-1 bg-white">
         <StatusBar style="dark" />
@@ -371,9 +310,9 @@ const ErrorState = memo(({ error, onBack }: { error: string, onBack: () => void 
 ));
 
 const ActionButtons = memo(({ onShare, onStart }: { onShare: () => void, onStart: () => void }) => (
-    <View className="px-6 py-4 bg-transparent">
-        <ShareButton onPress={onShare} />
-        <StartButton onPress={onStart} />
+    <View className="px-6 py-4 bg-transparent gap-2">
+        <ShareButton title="Share Routine" onPress={onShare} size="lg" />
+        <GradientButton title="START" onPress={onStart} size="lg" />
     </View>
 ));
 
@@ -405,7 +344,6 @@ const RoutineDetail = () => {
 
             setRoutine(routineData);
 
-            // Check if routine is already saved
             if (routineData) {
                 const saved = await isRoutineSaved(routineData.id);
                 setIsFavorite(saved);
@@ -494,13 +432,11 @@ const RoutineDetail = () => {
 
         try {
             if (isFavorite) {
-                // Remove from favorites
                 const success = await removeRoutine(routine.id);
                 if (success) {
                     setIsFavorite(false);
                 }
             } else {
-                // Add to favorites
                 const routineToSave: Omit<SavedRoutine, 'savedAt'> = {
                     id: routine.id,
                     name: routine.name,
