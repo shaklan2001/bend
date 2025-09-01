@@ -19,6 +19,7 @@ import { supabase } from '../../lib/supabase';
 import Feather from '@expo/vector-icons/Feather';
 import { saveRoutine, removeRoutine, isRoutineSaved, SavedRoutine } from '../../lib/saveRoutine';
 import { GradientButton, ShareButton } from '../../components/Button';
+import { ExerciseDurationCard } from '@src/components/Shared/ExerciseDurationCard';
 
 interface Exercise {
     id: string;
@@ -80,136 +81,26 @@ const Header = memo(({ handleBack, routine }: { handleBack: () => void, routine:
     );
 });
 
-const DurationControls = memo(({ duration, onDurationChange }: {
-    duration: number,
-    onDurationChange: (increment: boolean) => void
-}) => {
-    const handleDecrease = useCallback(() => {
-        onDurationChange(false);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }, [onDurationChange]);
 
-    const handleIncrease = useCallback(() => {
-        onDurationChange(true);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }, [onDurationChange]);
-
-    return (
-        <View className="items-center">
-            <Text style={[FontStyles.bodyMedium, {
-                color: '#6B7280',
-                fontWeight: '600',
-                marginBottom: 8,
-            }]}>
-                {Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}
-            </Text>
-            <View className="flex-row items-center space-x-2 gap-2">
-                <TouchableOpacity
-                    onPress={handleDecrease}
-                    style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 16,
-                        backgroundColor: '#FFFFFF',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.3,
-                        shadowRadius: 8,
-                        elevation: 3,
-                    }}
-                    activeOpacity={0.7}
-                >
-                    <MaterialCommunityIcons name="minus" size={16} color="#6B7280" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={handleIncrease}
-                    style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 16,
-                        backgroundColor: '#F3F4F6',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.3,
-                        shadowRadius: 8,
-                        elevation: 3,
-                    }}
-                    activeOpacity={0.7}
-                >
-                    <MaterialCommunityIcons name="plus" size={16} color="#6B7280" />
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
-});
 
 const ExerciseCard = memo(({ exercise, duration, sequence }: {
     exercise: Exercise,
     duration: number,
     sequence: number
 }) => {
-    const [durationValue, setDurationValue] = useState(duration);
-
-    const handleDurationChange = useCallback((increment: boolean) => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        if (increment) {
-            setDurationValue(prev => Math.min(prev + 15, 300));
-        } else {
-            setDurationValue(prev => Math.max(prev - 15, 15));
-        }
+    const handleDurationChange = useCallback((exerciseId: string, newDuration: number) => {
+        console.log(`Duration changed for ${exerciseId} to ${newDuration}`);
     }, []);
 
     return (
-        <View style={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: 20,
-            padding: 16,
-            marginBottom: 16,
-            flexDirection: 'row',
-            alignItems: 'center',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 8,
-            elevation: 3,
-        }}>
-            <View style={{
-                width: 60,
-                height: 60,
-                borderRadius: 30,
-                backgroundColor: '#F3F4F6',
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginRight: 16,
-                overflow: 'hidden',
-            }}>
-                <Image
-                    source={{ uri: exercise?.image_url }}
-                    style={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: 25,
-                    }}
-                    resizeMode="cover"
-                />
-            </View>
-
-            <View className="flex-1">
-                <Text style={[FontStyles.bodyLarge, {
-                    color: '#000000',
-                    fontWeight: '700',
-                    marginBottom: 4,
-                }]}>
-                    {exercise?.name}
-                </Text>
-            </View>
-
-            <DurationControls duration={durationValue} onDurationChange={handleDurationChange} />
-        </View>
+        <ExerciseDurationCard
+            exercise={exercise}
+            duration={duration}
+            onDurationChange={handleDurationChange}
+            showDurationControls={false}
+            sequence={sequence}
+            showSequence={true}
+        />
     );
 });
 

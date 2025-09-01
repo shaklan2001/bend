@@ -14,11 +14,12 @@ import { StatusBar } from 'expo-status-bar';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import Entypo from '@expo/vector-icons/Entypo';
 import { FontStyles } from '../../lib/fonts';
 import { supabase } from '../../lib/supabase';
 import { NextButton } from '@src/components/Shared/NextButton';
 import Gravity from '../UI/Gravity';
+import DurationModal from './DurationModal';
+import Header from '../UI/Header';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -181,29 +182,6 @@ const SelectedExercises = memo(({
     );
 });
 
-const Header = memo(({ onClose }: { onClose: () => void }) => (
-    <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-100">
-        <TouchableOpacity
-            onPress={onClose}
-            className="w-10 h-10 rounded-full justify-center items-center"
-            activeOpacity={0.6}
-        >
-            <Entypo name="cross" size={34} color="#6B72808A" />
-        </TouchableOpacity>
-
-        <View className="flex-1 items-center">
-            <Text style={[FontStyles.heading2, {
-                color: '#111827',
-                fontWeight: '700',
-            }]}>
-                Select Stretches
-            </Text>
-        </View>
-
-        <View className="w-10" />
-    </View>
-));
-
 const LoadingState = memo(() => (
     <View className="py-20 items-center">
         <MaterialCommunityIcons
@@ -248,6 +226,7 @@ const CustomModal = memo(({
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isDurationModalVisible, setIsDurationModalVisible] = useState(false);
 
     const fetchExercises = useCallback(async () => {
         try {
@@ -301,9 +280,13 @@ const CustomModal = memo(({
     const handleNext = useCallback(() => {
         if (selectedExercises.length === 0) return;
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        console.log('Selected exercises:', selectedExercises);
+        setIsDurationModalVisible(true);
+    }, [selectedExercises]);
+
+    const handleDurationSave = useCallback((exercisesWithDuration: any[]) => {
+        console.log('Exercises with custom durations:', exercisesWithDuration);
         onClose();
-    }, [selectedExercises, onClose]);
+    }, [onClose]);
 
     const handleClose = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -369,7 +352,7 @@ const CustomModal = memo(({
                     }}
                 >
                     <SafeAreaView className="flex-1">
-                        <Header onClose={handleClose} />
+                        <Header title="Select Stretches" onClose={handleClose} />
 
                         <ScrollView
                             className="flex-1"
@@ -447,6 +430,13 @@ const CustomModal = memo(({
                     </SafeAreaView>
                 </Animated.View>
             </Animated.View>
+
+            {isDurationModalVisible && <DurationModal
+                visible={isDurationModalVisible}
+                onClose={() => setIsDurationModalVisible(false)}
+                exercises={selectedExercises}
+                onSave={handleDurationSave}
+            />}
         </Modal>
     );
 });

@@ -6,6 +6,7 @@ import { Fonts, FontStyles } from '../../lib/fonts';
 import * as Haptics from 'expo-haptics';
 import { AnswerKey, screens } from '../../lib/constant';
 import { NextButton } from '@src/components/Shared/NextButton';
+import Gravity from '@src/components/UI/Gravity';
 
 
 const InfoScreen = memo(({ title, subtitle, image }: { title: string; subtitle: string; image?: ImageSourcePropType }) => (
@@ -403,9 +404,20 @@ export default function OnboardingFlow() {
                     {currentScreen.type === 'info' ? (
                         <TapToContinue onPress={handleNext} />
                     ) : (
-                        <NextButton
-                            onPress={handleNext}
-                        />
+                        <Gravity>
+                            <View style={{
+                                position: 'absolute',
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                paddingHorizontal: 24,
+                                paddingVertical: 20,
+                            }}>
+                                <NextButton
+                                    onPress={handleNext}
+                                />
+                            </View>
+                        </Gravity>
                     )}
                 </Animated.View>
             </View>
