@@ -285,6 +285,8 @@ const CustomModal = memo(({
 
     const handleDurationSave = useCallback((exercisesWithDuration: any[]) => {
         console.log('Exercises with custom durations:', exercisesWithDuration);
+        // The DurationModal will now open the DesignCoverModal
+        // and handle the final routine creation
         onClose();
     }, [onClose]);
 

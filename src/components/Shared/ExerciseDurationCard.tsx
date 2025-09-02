@@ -29,9 +29,6 @@ export const ExerciseDurationCard = memo(({
     exercise,
     duration,
     onDurationChange,
-    showDurationControls = true,
-    sequence,
-    showSequence = false
 }: ExerciseDurationCardProps) => {
     const handleIncrease = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -85,30 +82,6 @@ export const ExerciseDurationCard = memo(({
                     }}
                     resizeMode="cover"
                 />
-
-                {showSequence && sequence && (
-                    <View style={{
-                        position: 'absolute',
-                        top: -5,
-                        right: -5,
-                        width: 24,
-                        height: 24,
-                        borderRadius: 12,
-                        backgroundColor: '#FFFFFF',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        borderWidth: 2,
-                        borderColor: '#3B82F6',
-                    }}>
-                        <Text style={{
-                            color: '#3B82F6',
-                            fontWeight: '700',
-                            fontSize: 12,
-                        }}>
-                            {sequence}
-                        </Text>
-                    </View>
-                )}
             </View>
 
             <View className="flex-1">
@@ -122,92 +95,78 @@ export const ExerciseDurationCard = memo(({
                 </Text>
             </View>
 
-            {showDurationControls ? (
-                <View style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    borderRadius: 12,
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                }}>
-                    <TouchableOpacity
-                        onPress={handleDecrease}
-                        style={{
-                            width: 25,
-                            height: 25,
-                            borderRadius: 16,
-                            backgroundColor: '#FFFFFF',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            marginRight: 8,
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.3,
-                            shadowRadius: 8,
-                            elevation: 3,
-                        }}
-                        activeOpacity={0.7}
-                    >
-                        <Text style={{
-                            color: '#6B72808A',
-                            fontSize: 14,
-                            fontWeight: '900',
-                        }}>
-                            -
-                        </Text>
-                    </TouchableOpacity>
-
+            <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                borderRadius: 12,
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+            }}>
+                <TouchableOpacity
+                    onPress={handleDecrease}
+                    style={{
+                        width: 25,
+                        height: 25,
+                        borderRadius: 16,
+                        backgroundColor: '#FFFFFF',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginRight: 8,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        elevation: 3,
+                    }}
+                    activeOpacity={0.7}
+                >
                     <Text style={{
-                        color: '#111827',
+                        color: '#6B72808A',
                         fontSize: 14,
-                        fontWeight: '600',
-                        minWidth: 40,
-                        textAlign: 'center',
-                        opacity: 0.6
+                        fontWeight: '900',
                     }}>
-                        {formatDuration(duration)}
+                        -
                     </Text>
+                </TouchableOpacity>
 
-                    <TouchableOpacity
-                        onPress={handleIncrease}
-                        style={{
-                            width: 25,
-                            height: 25,
-                            borderRadius: 16,
-                            backgroundColor: '#FFFFFF',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            marginLeft: 8,
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.3,
-                            shadowRadius: 8,
-                            elevation: 3,
-                        }}
-                        activeOpacity={0.7}
-                    >
-                        <Text style={{
-                            color: '#6B72808A',
-                            fontSize: 14,
-                            fontWeight: '900',
-                        }}>
-                            +
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            ) : (
-                <View style={{
-                    alignItems: 'center',
+                <Text style={{
+                    color: '#111827',
+                    fontSize: 14,
+                    fontWeight: '600',
+                    minWidth: 40,
+                    textAlign: 'center',
+                    opacity: 0.6
                 }}>
-                    <Text style={[FontStyles.bodyMedium, {
-                        color: '#6B7280',
-                        fontWeight: '600',
-                        marginBottom: 8,
-                    }]}>
-                        {formatDuration(duration)}
+                    {formatDuration(duration)}
+                </Text>
+
+                <TouchableOpacity
+                    onPress={handleIncrease}
+                    style={{
+                        width: 25,
+                        height: 25,
+                        borderRadius: 16,
+                        backgroundColor: '#FFFFFF',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginLeft: 8,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        elevation: 3,
+                    }}
+                    activeOpacity={0.7}
+                >
+                    <Text style={{
+                        color: '#6B72808A',
+                        fontSize: 14,
+                        fontWeight: '900',
+                    }}>
+                        +
                     </Text>
-                </View>
-            )}
+                </TouchableOpacity>
+            </View>
         </View>
     );
 });

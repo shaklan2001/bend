@@ -74,7 +74,7 @@ export const RoutineCard = memo(({ routine, onPress }: {
             activeOpacity={0.7}
         >
             <View
-                className="w-[110px] h-[110px] rounded-3xl justify-center items-center mr-5"
+                className="w-[88px] h-[88px] rounded-3xl justify-center items-center mr-5"
                 style={{
                     backgroundColor: '#FFFFFF',
                     shadowColor: '#000000',
@@ -85,7 +85,7 @@ export const RoutineCard = memo(({ routine, onPress }: {
                 }}
             >
                 <View
-                    className="w-[70px] h-[70px] rounded-full justify-center items-center overflow-hidden"
+                    className="w-[56px] h-[56px] rounded-full justify-center items-center overflow-hidden"
                     style={{ backgroundColor: '#A69B8A2A' }}
                 >
                     <Image
@@ -95,8 +95,8 @@ export const RoutineCard = memo(({ routine, onPress }: {
                 </View>
             </View>
 
-            <View className="flex-1 ml-4">
-                <Text className="text-2xl font-bold text-gray-900 mb-2">
+            <View className="flex-1 ml-2">
+                <Text className="text-2xl font-bold text-gray-900 mb-1">
                     {routine.name}
                 </Text>
                 <Text className="text-lg font-bold text-[#A69B8A]">

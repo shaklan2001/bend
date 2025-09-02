@@ -5,7 +5,6 @@ import {
     SafeAreaView,
     ScrollView,
     TouchableOpacity,
-    Image,
     Share,
     Pressable,
 } from 'react-native';
@@ -20,6 +19,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { saveRoutine, removeRoutine, isRoutineSaved, SavedRoutine } from '../../lib/saveRoutine';
 import { GradientButton, ShareButton } from '../../components/Button';
 import { ExerciseDurationCard } from '@src/components/Shared/ExerciseDurationCard';
+import Gravity from '@src/components/UI/Gravity';
 
 interface Exercise {
     id: string;
@@ -97,9 +97,6 @@ const ExerciseCard = memo(({ exercise, duration, sequence }: {
             exercise={exercise}
             duration={duration}
             onDurationChange={handleDurationChange}
-            showDurationControls={false}
-            sequence={sequence}
-            showSequence={true}
         />
     );
 });
@@ -134,6 +131,7 @@ const RoutineInfo = memo(({ isFavorite, routine, totalMinutes, onPressFavorite }
                 marginBottom: 24,
                 lineHeight: 24,
                 marginTop: 8,
+
             }]}>
                 {routine.description}
             </Text>
@@ -201,10 +199,20 @@ const ErrorState = memo(({ error, onBack }: { error: string, onBack: () => void 
 ));
 
 const ActionButtons = memo(({ onShare, onStart }: { onShare: () => void, onStart: () => void }) => (
-    <View className="px-6 py-4 bg-transparent gap-2">
-        <ShareButton title="Share Routine" onPress={onShare} size="lg" />
-        <GradientButton title="START" onPress={onStart} size="lg" />
-    </View>
+    <Gravity>
+        <View style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            paddingHorizontal: 24,
+            paddingVertical: 20,
+            gap: 10,
+        }}>
+            <ShareButton title="Share Routine" onPress={onShare} size="lg" />
+            <GradientButton title="START" onPress={onStart} size="lg" />
+        </View>
+    </Gravity>
 ));
 
 const RoutineDetail = () => {
@@ -372,15 +380,16 @@ const RoutineDetail = () => {
 
             <Header handleBack={handleBack} routine={routine} />
 
-            <ScrollView className="flex-1 px-6 py-4" showsVerticalScrollIndicator={false}>
-                <RoutineInfo
-                    routine={routine}
-                    totalMinutes={totalMinutes}
-                    onPressFavorite={handlePressFavorite}
-                    isFavorite={isFavorite}
-                />
-                <SectionTitle />
-
+            <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+                <View className="px-6 pt-4">
+                    <RoutineInfo
+                        routine={routine}
+                        totalMinutes={totalMinutes}
+                        onPressFavorite={handlePressFavorite}
+                        isFavorite={isFavorite}
+                    />
+                    <SectionTitle />
+                </View>
                 {exercises.map((routineExercise, index) => (
                     <ExerciseCard
                         key={routineExercise.id}

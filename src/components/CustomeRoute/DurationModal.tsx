@@ -16,6 +16,8 @@ import { NextButton } from '@src/components/Shared/NextButton';
 import { ExerciseDurationCard } from '@src/components/Shared/ExerciseDurationCard';
 import Gravity from '../UI/Gravity';
 import Header from '../UI/Header';
+import DesignCoverModal from './DesignCoverModal';
+import { saveCustomRoutine } from '../../lib/customRoutines';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -51,6 +53,7 @@ const DurationModal = memo(({
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const [isClosing, setIsClosing] = useState(false);
     const [exercisesWithDuration, setExercisesWithDuration] = useState<ExerciseWithDuration[]>([]);
+    const [isDesignCoverModalVisible, setIsDesignCoverModalVisible] = useState(false);
 
     useEffect(() => {
         if (exercises.length > 0) {
@@ -74,9 +77,37 @@ const DurationModal = memo(({
 
     const handleSave = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        onSave(exercisesWithDuration);
-        onClose();
-    }, [exercisesWithDuration, onSave, onClose]);
+        setIsDesignCoverModalVisible(true);
+    }, []);
+
+    const handleDesignCoverFinish = useCallback(async (routineData: {
+        name: string;
+        exercises: ExerciseWithDuration[];
+        coverImage: string;
+    }) => {
+        console.log('Routine created:', routineData);
+
+        try {
+            const totalDuration = routineData.exercises.reduce((sum, ex) => sum + ex.duration_seconds, 0);
+
+            const success = await saveCustomRoutine({
+                name: routineData.name,
+                coverImage: routineData.coverImage,
+                exercises: routineData.exercises,
+                totalDuration,
+            });
+
+            if (success) {
+                console.log('Custom routine saved successfully');
+                onSave(routineData.exercises);
+                onClose();
+            } else {
+                console.error('Failed to save custom routine');
+            }
+        } catch (error) {
+            console.error('Error saving custom routine:', error);
+        }
+    }, [onSave, onClose]);
 
     const handleClose = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -183,6 +214,14 @@ const DurationModal = memo(({
                     </SafeAreaView>
                 </Animated.View>
             </Animated.View>
+
+            {/* Design Cover Modal */}
+            <DesignCoverModal
+                visible={isDesignCoverModalVisible}
+                onClose={() => setIsDesignCoverModalVisible(false)}
+                exercises={exercisesWithDuration}
+                onFinish={handleDesignCoverFinish}
+            />
         </Modal>
     );
 });
