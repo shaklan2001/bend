@@ -18,6 +18,7 @@ import { TimerCircle } from '@src/components/Instructions/TimerCircle';
 import { CountdownOverlay } from '@src/components/Instructions/CountdownOverlay';
 import { NextExercisePreview } from '@src/components/Instructions/NextExercisePreview';
 import { ExerciseControls } from '@src/components/Instructions/ExerciseControls';
+import { ExerciseInfoModal } from '@src/components/Instructions/ExerciseInfoModal';
 import Header from '../UI/Header';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -91,7 +92,13 @@ const exerciseInfoStyles = StyleSheet.create({
     },
 });
 
-const ExerciseInfo = memo(({ exercise }: { exercise: Exercise }) => {
+const ExerciseInfo = memo(({
+    exercise,
+    onInfoPress
+}: {
+    exercise: Exercise;
+    onInfoPress: () => void;
+}) => {
     return (
         <View className="items-center px-6 mb-5">
             <View className="flex-row items-center">
@@ -102,6 +109,7 @@ const ExerciseInfo = memo(({ exercise }: { exercise: Exercise }) => {
                     className="absolute -right-8 top-0 w-[20px] h-[20px] rounded-full bg-white justify-center items-center ml-2"
                     style={exerciseInfoStyles.infoIcon}
                     activeOpacity={0.7}
+                    onPress={onInfoPress}
                 >
                     <Entypo name="info" size={10} color="#000000" />
                 </TouchableOpacity>
@@ -155,6 +163,8 @@ export const ExerciseModal = memo(({
     const [showCountdown, setShowCountdown] = useState(false);
     const [countdownValue, setCountdownValue] = useState<number | string>(3);
     const [showNextPreview, setShowNextPreview] = useState(false);
+    const [showInfoModal, setShowInfoModal] = useState(false);
+    const [pausedTime, setPausedTime] = useState(0);
 
     const currentExercise = useMemo(() =>
         exercises[currentIndex],
@@ -194,6 +204,8 @@ export const ExerciseModal = memo(({
                             setTimeout(() => {
                                 setShowCountdown(false);
                                 setCountdownValue(3);
+                                // Add haptic feedback when exercise starts
+                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
                             }, 1000);
                             return "START";
                         }
@@ -216,8 +228,12 @@ export const ExerciseModal = memo(({
 
     const pauseExercise = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        if (!isPaused) {
+            // Pausing - store the current elapsed time
+            setPausedTime(elapsedTime);
+        }
         setIsPaused(!isPaused);
-    }, [isPaused]);
+    }, [isPaused, elapsedTime]);
 
     const nextExerciseAction = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -237,14 +253,36 @@ export const ExerciseModal = memo(({
         }
     }, [currentIndex]);
 
+    const handleInfoPress = useCallback(() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setShowInfoModal(true);
+    }, []);
+
+    const handleCloseInfoModal = useCallback(() => {
+        setShowInfoModal(false);
+    }, []);
+
+    const handlePauseTimer = useCallback(() => {
+        if (!isPaused) {
+            setIsPaused(true);
+        }
+    }, [isPaused]);
+
+    const handleResumeTimer = useCallback(() => {
+        if (isPaused) {
+            setIsPaused(false);
+        }
+    }, [isPaused]);
+
     useEffect(() => {
         if (!visible || !currentExercise || isPaused || showCountdown) return;
 
         const startTime = Date.now();
         const totalDuration = currentExercise.duration_seconds * 1000;
+        const pausedDuration = pausedTime * 1000; // Convert paused time to milliseconds
 
         const timer = setInterval(() => {
-            const elapsed = Date.now() - startTime;
+            const elapsed = Date.now() - startTime + pausedDuration;
             const remaining = Math.max(0, totalDuration - elapsed);
             const remainingSeconds = Math.ceil(remaining / 1000);
             const elapsedSeconds = Math.min(elapsed / 1000, currentExercise.duration_seconds);
@@ -272,7 +310,7 @@ export const ExerciseModal = memo(({
         }, 100);
 
         return () => clearInterval(timer);
-    }, [visible, currentExercise, isPaused, showCountdown, nextExercise, isLastExercise, onComplete]);
+    }, [visible, currentExercise, isPaused, showCountdown, nextExercise, isLastExercise, onComplete, pausedTime]);
 
     useEffect(() => {
         if (visible) {
@@ -283,6 +321,8 @@ export const ExerciseModal = memo(({
             setCountdownValue(3);
             setShowNextPreview(false);
             setElapsedTime(0);
+            setShowInfoModal(false);
+            setPausedTime(0);
         }
     }, [visible]);
 
@@ -323,7 +363,10 @@ export const ExerciseModal = memo(({
                             <NextExercisePreview exercise={nextExercise.exercise} />
                         )}
 
-                        <ExerciseInfo exercise={currentExercise.exercise} />
+                        <ExerciseInfo
+                            exercise={currentExercise.exercise}
+                            onInfoPress={handleInfoPress}
+                        />
 
                         <TimerDisplay
                             remainingTime={remainingTime}
@@ -345,6 +388,14 @@ export const ExerciseModal = memo(({
             {showCountdown && (
                 <CountdownOverlay value={countdownValue} />
             )}
+
+            <ExerciseInfoModal
+                visible={showInfoModal}
+                exercise={currentExercise?.exercise || null}
+                onClose={handleCloseInfoModal}
+                onPauseTimer={handlePauseTimer}
+                onResumeTimer={handleResumeTimer}
+            />
         </Modal>
     );
 });
