@@ -10,7 +10,7 @@ const Header = memo(({ onClose, title }: { onClose: () => void, title: string })
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 24,
-        paddingVertical: 20,
+        paddingVertical: 12,
         borderBottomWidth: 1,
         borderBottomColor: '#E5E7EB',
     }}>

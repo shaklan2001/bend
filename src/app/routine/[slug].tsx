@@ -14,12 +14,13 @@ import { Entypo, MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontStyles } from '../../lib/fonts';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '../../lib/supabase';
-
 import Feather from '@expo/vector-icons/Feather';
 import { saveRoutine, removeRoutine, isRoutineSaved, SavedRoutine } from '../../lib/saveRoutine';
+import { getCustomRoutineBySlug, CustomRoutine } from '../../lib/customRoutines';
 import { GradientButton, ShareButton } from '../../components/Button';
 import { ExerciseDurationCard } from '@src/components/Shared/ExerciseDurationCard';
 import Gravity from '@src/components/UI/Gravity';
+import { ExerciseModal } from '@src/components/Instructions/ExerciseModal';
 
 interface Exercise {
     id: string;
@@ -37,6 +38,7 @@ interface Routine {
     body_part_id: string;
     slug: string;
     image_url?: string;
+    isCustom?: boolean;
 }
 
 interface RoutineExercise {
@@ -75,7 +77,6 @@ const Header = memo(({ handleBack, routine }: { handleBack: () => void, routine:
                     {routine.name}
                 </Text>
             </View>
-
             <View className="w-10" />
         </View>
     );
@@ -83,20 +84,24 @@ const Header = memo(({ handleBack, routine }: { handleBack: () => void, routine:
 
 
 
-const ExerciseCard = memo(({ exercise, duration, sequence }: {
+const ExerciseCard = memo(({ exercise, duration, sequence, onDurationChange }: {
     exercise: Exercise,
     duration: number,
-    sequence: number
+    sequence: number,
+    onDurationChange: (exerciseId: string, newDuration: number) => void
 }) => {
     const handleDurationChange = useCallback((exerciseId: string, newDuration: number) => {
-        console.log(`Duration changed for ${exerciseId} to ${newDuration}`);
-    }, []);
+        onDurationChange(exerciseId, newDuration);
+    }, [onDurationChange]);
 
     return (
         <ExerciseDurationCard
             exercise={exercise}
             duration={duration}
             onDurationChange={handleDurationChange}
+            showDurationControls={true}
+            sequence={sequence}
+            showSequence={true}
         />
     );
 });
@@ -116,14 +121,17 @@ const RoutineInfo = memo(({ isFavorite, routine, totalMinutes, onPressFavorite }
             }]}>
                 {totalMinutes} minutes
             </Text>
-            <Pressable onPress={onPressFavorite}>
-                <Feather
-                    name="heart"
-                    size={20}
-                    color={isFavorite ? "#EF4444" : "#6B7280"}
-                    fill={isFavorite ? "#EF4444" : "none"}
-                />
-            </Pressable>
+            {!routine.isCustom && (
+                <Pressable onPress={onPressFavorite}>
+                    <Feather
+                        name="heart"
+                        size={20}
+                        color={isFavorite ? "#EF4444" : "#6B7280"}
+                        fill={isFavorite ? "#EF4444" : "none"}
+                    />
+                </Pressable>
+            )}
+            {routine.isCustom && <View className="w-10" />}
         </View>
         {routine.description && (
             <Text style={[FontStyles.bodyMedium, {
@@ -223,6 +231,7 @@ const RoutineDetail = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isFavorite, setIsFavorite] = useState(false);
+    const [showExerciseModal, setShowExerciseModal] = useState(false);
 
     const fetchRoutineData = useCallback(async () => {
         try {
@@ -230,6 +239,41 @@ const RoutineDetail = () => {
             setError(null);
 
             const routineSlug = slug as string;
+            const customRoutine = await getCustomRoutineBySlug(routineSlug);
+
+            if (customRoutine) {
+                const routineData: Routine = {
+                    id: customRoutine.id,
+                    name: customRoutine.name,
+                    description: '',
+                    total_duration_minutes: Math.floor(customRoutine.totalDuration / 60),
+                    body_part_id: 'custom',
+                    slug: customRoutine.slug,
+                    image_url: customRoutine.coverImage,
+                    isCustom: true
+                };
+
+                setRoutine(routineData);
+                setIsFavorite(false);
+
+                const transformedExercises = customRoutine.exercises.map(exercise => ({
+                    id: `${customRoutine.id}_${exercise.id}`,
+                    routine_id: customRoutine.id,
+                    exercise_id: exercise.id,
+                    sequence: exercise.sequence,
+                    duration_seconds: exercise.duration_seconds,
+                    exercise: {
+                        id: exercise.id,
+                        name: exercise.name,
+                        description: exercise.description,
+                        image_url: exercise.image_url,
+                        video_url: exercise.video_url
+                    }
+                }));
+
+                setExercises(transformedExercises);
+                return;
+            }
 
             const { data: routineData, error: routineError } = await supabase
                 .from('routines')
@@ -268,9 +312,6 @@ const RoutineDetail = () => {
             if (exercisesError) {
                 throw new Error('Failed to load exercise details');
             }
-
-            console.log('Exercises data:', exercisesData);
-
             const exercisesMap = new Map();
             exercisesData?.forEach(exercise => {
                 exercisesMap.set(exercise.id, exercise);
@@ -302,11 +343,21 @@ const RoutineDetail = () => {
 
     const handleStartRoutine = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        setShowExerciseModal(true);
+    }, []);
+
+    const handleCloseExerciseModal = useCallback(() => {
+        setShowExerciseModal(false);
+    }, []);
+
+    const handleCompleteRoutine = useCallback(() => {
+        setShowExerciseModal(false);
+        // You can add completion logic here (e.g., show completion screen, save progress, etc.)
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }, []);
 
     const handleShareRoutine = useCallback(async () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
         try {
             const shareUrl = `https://bend.com/routines/${slug}`;
             await Share.share({
@@ -324,11 +375,24 @@ const RoutineDetail = () => {
         router.back();
     }, [router]);
 
+    const handleDurationChange = useCallback((exerciseId: string, newDuration: number) => {
+        setExercises(prevExercises =>
+            prevExercises.map(exercise =>
+                exercise.exercise_id === exerciseId
+                    ? { ...exercise, duration_seconds: newDuration }
+                    : exercise
+            )
+        );
+    }, []);
+
     const handlePressFavorite = useCallback(async () => {
         if (!routine) return;
 
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        if (routine.isCustom) {
+            return;
+        }
 
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         try {
             if (isFavorite) {
                 const success = await removeRoutine(routine.id);
@@ -377,10 +441,14 @@ const RoutineDetail = () => {
     return (
         <SafeAreaView className="flex-1 bg-white">
             <StatusBar style="dark" />
-
             <Header handleBack={handleBack} routine={routine} />
-
-            <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+            <ScrollView
+                className="flex-1"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{
+                    paddingBottom: 120,
+                }}
+            >
                 <View className="px-6 pt-4">
                     <RoutineInfo
                         routine={routine}
@@ -396,11 +464,18 @@ const RoutineDetail = () => {
                         exercise={routineExercise.exercise}
                         duration={routineExercise.duration_seconds}
                         sequence={index + 1}
+                        onDurationChange={handleDurationChange}
                     />
                 ))}
             </ScrollView>
-
             <ActionButtons onShare={handleShareRoutine} onStart={handleStartRoutine} />
+
+            <ExerciseModal
+                visible={showExerciseModal}
+                exercises={exercises}
+                onClose={handleCloseExerciseModal}
+                onComplete={handleCompleteRoutine}
+            />
         </SafeAreaView>
     );
 };

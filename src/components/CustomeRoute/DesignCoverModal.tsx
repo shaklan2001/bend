@@ -14,6 +14,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
 import { NextButton } from '@src/components/Shared/NextButton';
+import CoverPreviewCard from '@src/components/Shared/CoverPreviewCard';
 import Gravity from '../UI/Gravity';
 import Header from '../UI/Header';
 
@@ -43,104 +44,13 @@ interface DesignCoverModalProps {
     }) => void;
 }
 
-// Cover Preview Component
-const CoverPreview = memo(({ exercises, selectedCoverImage, routineName }: {
+
+
+const PhotoSelector = memo(({ exercises, selectedImages, onSelectImage }: {
     exercises: ExerciseWithDuration[];
-    selectedCoverImage: string;
-    routineName: string;
+    selectedImages: string[];
+    onSelectImage: (imageUrl: string) => void;
 }) => {
-    const totalDuration = exercises.reduce((sum, ex) => sum + ex.duration_seconds, 0);
-    const totalMinutes = Math.floor(totalDuration / 60);
-
-    return (
-        <View style={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: 20,
-            padding: 24,
-            marginBottom: 32,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.1,
-            shadowRadius: 12,
-            elevation: 4,
-        }}>
-            {/* Exercise Icons Row */}
-            <View style={{
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginBottom: 20,
-                gap: 8,
-            }}>
-                {/* Show up to 5 exercise icons */}
-                {exercises.slice(0, 5).map((exercise, index) => (
-                    <View key={exercise.id} style={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: 25,
-                        backgroundColor: index === 0 ? '#FCE7F3' :
-                            index === 1 ? '#A69B8A' :
-                                index === 2 ? '#FEF3C7' : '#F3F4F6',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        overflow: 'hidden',
-                    }}>
-                        <Image
-                            source={{ uri: exercise.image_url }}
-                            style={{
-                                width: 40,
-                                height: 40,
-                                borderRadius: 20,
-                            }}
-                            resizeMode="cover"
-                        />
-                    </View>
-                ))}
-                {/* Add placeholder circles if less than 5 exercises */}
-                {Array.from({ length: Math.max(0, 5 - exercises.length) }).map((_, index) => (
-                    <View key={`placeholder-${index}`} style={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: 25,
-                        backgroundColor: '#F3F4F6',
-                        borderWidth: 2,
-                        borderColor: '#E5E7EB',
-                        borderStyle: 'dashed',
-                    }} />
-                ))}
-            </View>
-
-            {/* Routine Name */}
-            <Text style={{
-                fontSize: 24,
-                fontWeight: '700',
-                color: '#111827',
-                textAlign: 'center',
-                marginBottom: 8,
-            }}>
-                {routineName || 'Custom'}
-            </Text>
-
-            {/* Duration */}
-            <Text style={{
-                fontSize: 16,
-                color: '#6B7280',
-                textAlign: 'center',
-                fontWeight: '500',
-            }}>
-                {totalMinutes} MINUTES
-            </Text>
-        </View>
-    );
-});
-
-// Photo Selection Component
-const PhotoSelector = memo(({ exercises, selectedCoverImage, onSelectCover }: {
-    exercises: ExerciseWithDuration[];
-    selectedCoverImage: string;
-    onSelectCover: (imageUrl: string) => void;
-}) => {
-    // Use exercise images as cover options
     const coverOptions = exercises.slice(0, 4).map(exercise => exercise.image_url);
 
     return (
@@ -163,7 +73,7 @@ const PhotoSelector = memo(({ exercises, selectedCoverImage, onSelectCover }: {
                 {coverOptions.map((imageUrl, index) => (
                     <TouchableOpacity
                         key={index}
-                        onPress={() => onSelectCover(imageUrl)}
+                        onPress={() => onSelectImage(imageUrl)}
                         style={{
                             width: 70,
                             height: 70,
@@ -173,8 +83,6 @@ const PhotoSelector = memo(({ exercises, selectedCoverImage, onSelectCover }: {
                                     index === 2 ? '#FEF3C7' : '#F3F4F6',
                             justifyContent: 'center',
                             alignItems: 'center',
-                            borderWidth: selectedCoverImage === imageUrl ? 3 : 0,
-                            borderColor: '#3B82F6',
                             overflow: 'hidden',
                         }}
                         activeOpacity={0.8}
@@ -205,18 +113,66 @@ const DesignCoverModal = memo(({
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const [isClosing, setIsClosing] = useState(false);
     const [routineName, setRoutineName] = useState('');
-    const [selectedCoverImage, setSelectedCoverImage] = useState('');
+    const [selectedImages, setSelectedImages] = useState<string[]>(['', '', '']);
+    const [isInitialized, setIsInitialized] = useState(false);
+    const [userHasInteracted, setUserHasInteracted] = useState(false);
 
-    // Set default cover image to first exercise
+    // Set default images when exercises are available (only initially)
     useEffect(() => {
-        if (exercises.length > 0 && !selectedCoverImage) {
-            setSelectedCoverImage(exercises[0].image_url);
+        if (exercises.length > 0 && !isInitialized) {
+            const defaultImages = exercises.slice(0, 3).map(ex => ex.image_url);
+            setSelectedImages([
+                defaultImages[0] || '',
+                defaultImages[1] || '',
+                defaultImages[2] || ''
+            ]);
+            setIsInitialized(true);
         }
-    }, [exercises, selectedCoverImage]);
+    }, [exercises, isInitialized]);
+
+    const handleSelectImage = useCallback((imageUrl: string) => {
+        setSelectedImages(prev => {
+            // If this is the first user interaction, clear all default images
+            if (!userHasInteracted) {
+                setUserHasInteracted(true);
+                // Put selected image in center, clear others
+                return [imageUrl, '', ''];
+            }
+
+            // Find current position of the image
+            const currentPosition = prev.findIndex(img => img === imageUrl);
+
+            if (currentPosition === -1) {
+                // Image not currently selected
+                // Find first empty slot, prioritizing center → right → left
+                if (!prev[0]) {
+                    return [imageUrl, prev[1], prev[2]]; // center
+                } else if (!prev[1]) {
+                    return [prev[0], imageUrl, prev[2]]; // right
+                } else if (!prev[2]) {
+                    return [prev[0], prev[1], imageUrl]; // left
+                } else {
+                    // All slots filled, replace center
+                    return [imageUrl, prev[1], prev[2]];
+                }
+            } else {
+                // Image is already selected, cycle through positions
+                if (currentPosition === 0) {
+                    // Currently in center, move to left
+                    return ['', prev[1], imageUrl];
+                } else if (currentPosition === 2) {
+                    // Currently in left, move to right
+                    return [prev[0], imageUrl, ''];
+                } else {
+                    // Currently in right, move to center
+                    return [imageUrl, '', prev[2]];
+                }
+            }
+        });
+    }, [userHasInteracted]);
 
     const handleFinish = useCallback(() => {
         if (!routineName.trim()) {
-            // Show error or use default name
             return;
         }
 
@@ -225,11 +181,11 @@ const DesignCoverModal = memo(({
         onFinish({
             name: routineName.trim(),
             exercises,
-            coverImage: selectedCoverImage,
+            coverImage: selectedImages[0] || exercises[0]?.image_url || '',
         });
 
         onClose();
-    }, [routineName, exercises, selectedCoverImage, onFinish, onClose]);
+    }, [routineName, exercises, selectedImages, onFinish, onClose]);
 
     const handleClose = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -248,6 +204,8 @@ const DesignCoverModal = memo(({
             }),
         ]).start(() => {
             setIsClosing(false);
+            setIsInitialized(false);
+            setUserHasInteracted(false);
             onClose();
         });
     }, [onClose, slideAnim, fadeAnim]);
@@ -312,14 +270,13 @@ const DesignCoverModal = memo(({
                             }}
                             showsVerticalScrollIndicator={false}
                         >
-                            {/* Cover Preview */}
-                            <CoverPreview
-                                exercises={exercises}
-                                selectedCoverImage={selectedCoverImage}
+                            <CoverPreviewCard
+                                exercises={exercises.map((ex, index) => ({
+                                    ...ex,
+                                    image_url: selectedImages[index] || ex.image_url
+                                }))}
                                 routineName={routineName}
                             />
-
-                            {/* Choose Name Section */}
                             <View style={{ marginBottom: 32 }}>
                                 <Text style={{
                                     fontSize: 14,
@@ -338,9 +295,9 @@ const DesignCoverModal = memo(({
                                     placeholder="e.g. Morning Ritual"
                                     placeholderTextColor="#9CA3AF"
                                     style={{
-                                        borderWidth: 1,
+                                        borderWidth: 3,
                                         borderColor: '#E5E7EB',
-                                        borderRadius: 12,
+                                        borderRadius: 16,
                                         paddingHorizontal: 16,
                                         paddingVertical: 16,
                                         fontSize: 16,
@@ -349,31 +306,24 @@ const DesignCoverModal = memo(({
                                     }}
                                 />
                             </View>
-
-                            {/* Photo Selection */}
                             <PhotoSelector
                                 exercises={exercises}
-                                selectedCoverImage={selectedCoverImage}
-                                onSelectCover={setSelectedCoverImage}
+                                selectedImages={selectedImages}
+                                onSelectImage={handleSelectImage}
                             />
                         </ScrollView>
-
-                        {/* Bottom Button */}
-                        <Gravity>
-                            <View style={{
-                                position: 'absolute',
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                paddingHorizontal: 24,
-                                paddingVertical: 20,
-                            }}>
-                                <NextButton
-                                    onPress={handleFinish}
-                                    title="FINISH"
-                                />
-                            </View>
-                        </Gravity>
+                        <View style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            paddingHorizontal: 24,
+                            paddingVertical: 20,
+                        }}>
+                            <NextButton
+                                onPress={handleFinish}
+                            />
+                        </View>
                     </SafeAreaView>
                 </Animated.View>
             </Animated.View>

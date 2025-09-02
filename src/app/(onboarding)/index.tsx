@@ -161,7 +161,6 @@ const BackButton = memo(({ onPress }: { onPress: () => void }) => (
     </TouchableOpacity>
 ));
 
-
 const TapToContinue = memo(({ onPress }: { onPress: () => void }) => (
     <TouchableOpacity
         onPress={onPress}
@@ -197,8 +196,6 @@ export default function OnboardingFlow() {
         consultationType: null,
     });
 
-
-
     const fadeAnim = useRef(new Animated.Value(1)).current;
     const progressAnim = useRef(new Animated.Value(0)).current;
     const statusBarHeight = Platform.OS === 'ios' ? StatusBar.currentHeight || 44 : StatusBar.currentHeight || 24;
@@ -207,7 +204,6 @@ export default function OnboardingFlow() {
 
     const handleAnswer = useCallback((key: AnswerKey, value: string, type: string) => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
         if (type === 'single-choice-question') {
             setAnswers(prev => ({ ...prev, [key]: value }));
         } else if (type === 'multi-choice-question') {
@@ -224,7 +220,6 @@ export default function OnboardingFlow() {
 
     const handleNext = useCallback(async () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
         if (currentIndex < screens.length - 1) {
             Animated.timing(fadeAnim, {
                 toValue: 0,
@@ -319,7 +314,6 @@ export default function OnboardingFlow() {
     return (
         <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
             <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-
             <View
                 style={{
                     position: 'absolute',
@@ -386,7 +380,6 @@ export default function OnboardingFlow() {
                         />
                     )}
                 </Animated.View>
-
                 <Animated.View
                     style={{
                         opacity: fadeAnim,

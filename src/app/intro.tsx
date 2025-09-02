@@ -1,7 +1,7 @@
 import { View, Text, SafeAreaView, Animated, TouchableOpacity, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState, memo } from 'react';
+import { useEffect, useRef, useState, memo, useCallback } from 'react';
 import Button from '../components/Button';
 import { FontStyles } from '../lib/fonts';
 import { checkOnboardingStatus } from '../lib/supabase';
@@ -160,7 +160,7 @@ export default function IntroScreen() {
     const textOpacity = useRef(new Animated.Value(0)).current;
     const finalScreenOpacity = useRef(new Animated.Value(0)).current;
 
-    const checkOnboardingStatusLocal = async () => {
+    const checkOnboardingStatusLocal = useCallback(async () => {
         try {
             const { completed } = await checkOnboardingStatus();
             setOnboardingCompleted(completed);
@@ -168,41 +168,41 @@ export default function IntroScreen() {
             console.error('Error checking onboarding status:', error);
             setOnboardingCompleted(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         checkOnboardingStatusLocal();
     }, []);
 
-    const handleGetStarted = () => {
+    const handleGetStarted = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        router.push('/(onboarding)');
-    };
+        router.replace('/(onboarding)');
+    }, []);
 
-    const handleLogin = () => {
+    const handleLogin = useCallback(() => {
         setShowLoginSheet(true);
-    };
+    }, []);
 
-    const handleReferralCodePress = () => {
+    const handleReferralCodePress = useCallback(() => {
         setShowReferralModal(true);
-    };
+    }, []);
 
-    const closeReferralModal = () => {
+    const closeReferralModal = useCallback(() => {
         setShowReferralModal(false);
-    };
+    }, []);
 
-    const handleLoginFromReferral = () => {
+    const handleLoginFromReferral = useCallback(() => {
         setShowReferralModal(false);
         setShowLoginSheet(true);
-    };
+    }, []);
 
-    const closeLoginSheet = () => {
+    const closeLoginSheet = useCallback(() => {
         setShowLoginSheet(false);
-    };
+    }, []);
 
-    const handleSwitchToCreateAccount = () => {
+    const handleSwitchToCreateAccount = useCallback(() => {
         console.log('Switch to create account');
-    };
+    }, []);
 
     useEffect(() => {
         circleScale.setValue(1.5);
@@ -343,19 +343,19 @@ export default function IntroScreen() {
                 </View>
             )}
 
-            <ReferralCodeModal
+            {showReferralModal && <ReferralCodeModal
                 visible={showReferralModal}
                 onClose={closeReferralModal}
                 referralCode={referralCode}
                 setReferralCode={setReferralCode}
                 onLogin={handleLoginFromReferral}
-            />
+            />}
 
-            <LogInSheet
+            {showLoginSheet && <LogInSheet
                 visible={showLoginSheet}
                 onClose={closeLoginSheet}
                 onSwitchToCreateAccount={handleSwitchToCreateAccount}
-            />
+            />}
         </SafeAreaView>
     );
 }

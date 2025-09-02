@@ -8,6 +8,7 @@ import ActionButton from '../../../components/ActionButton';
 import CreateAccountSheet from '../../../components/Shared/CreateAccountSheet';
 import LogInSheet from '../../../components/Shared/LogInSheet';
 import * as Haptics from 'expo-haptics';
+import Header from '@src/components/UI/Header';
 
 const ProfileFooter = memo(() => {
   return (
@@ -106,35 +107,7 @@ const ProfileScreen = () => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
-
-      <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-100">
-        <TouchableOpacity
-          onPress={handleClose}
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            backgroundColor: '#F3F4F6',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-          activeOpacity={0.7}
-        >
-          <MaterialCommunityIcons name="close" size={20} color="#6B7280" />
-        </TouchableOpacity>
-
-        <Text style={[FontStyles.heading2, {
-          color: '#000000',
-          fontWeight: '700',
-          flex: 1,
-          textAlign: 'center',
-        }]}>
-          Profile
-        </Text>
-
-        <View style={{ width: 32 }} />
-      </View>
-
+      <Header title="Profile" onClose={handleClose} />
       <ScrollView className="flex-1 px-6 py-6" showsVerticalScrollIndicator={false}>
         <View className="mb-8">
           <Text style={[FontStyles.bodyMedium, {

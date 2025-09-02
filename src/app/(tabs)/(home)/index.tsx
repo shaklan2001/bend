@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Fonts, FontStyles } from '../../../lib/fonts';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { memo, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import YogaCarousel from '../../../components/HomePage/YogaCarousel';
 import SearchModal from '../../../components/SearchModal';
 import BrowseByArea from '../../../components/HomePage/BrowseByArea';
@@ -216,16 +216,14 @@ const Home = () => {
 
     const { day, month, dayName } = getCurrentDate();
 
-    const handleProfilePress = () => {
-        router.push('/(tabs)/(home)/profile');
-    };
+        const handleProfilePress = useCallback(() => {
+            router.push('/(tabs)/(home)/profile');
+        }, [router]);
 
     const handleResetPress = async () => {
         try {
-            // Get all keys from AsyncStorage
             const allKeys = await AsyncStorage.getAllKeys();
 
-            // Filter keys that are related to onboarding/user data
             const keysToRemove = allKeys.filter(key =>
                 key.includes('onboarding') ||
                 key.includes('user') ||
@@ -236,23 +234,21 @@ const Home = () => {
                 key.includes('first_time')
             );
 
-            // Remove all onboarding-related keys
             if (keysToRemove.length > 0) {
                 await AsyncStorage.multiRemove(keysToRemove);
                 console.log('Cleared keys:', keysToRemove);
             }
 
-            // Navigate to intro screen instead of onboarding
             router.replace('/intro');
         } catch (error) {
             console.error('Error resetting onboarding state:', error);
         }
     };
 
-    const handleSearchPress = () => {
+    const handleSearchPress = useCallback(() => {
         setIsSearchModalVisible(true);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    };
+    }, []);
 
     return (
         <SafeAreaView className="flex-1 bg-white">

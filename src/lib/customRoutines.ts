@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export interface CustomRoutine {
     id: string;
     name: string;
+    slug: string;
     coverImage: string;
     exercises: Array<{
         id: string;
@@ -19,12 +20,40 @@ export interface CustomRoutine {
 
 const CUSTOM_ROUTINES_KEY = 'customRoutines';
 
-export const saveCustomRoutine = async (routine: Omit<CustomRoutine, 'id' | 'createdAt'>): Promise<boolean> => {
+// Generate a URL-friendly slug from routine name
+const generateSlug = (name: string): string => {
+    return name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .trim();
+};
+
+// Ensure unique slug by appending number if needed
+const ensureUniqueSlug = async (baseSlug: string): Promise<string> => {
+    const existingRoutines = await getCustomRoutines();
+    let slug = baseSlug;
+    let counter = 1;
+
+    while (existingRoutines.some(routine => routine.slug === slug)) {
+        slug = `${baseSlug}-${counter}`;
+        counter++;
+    }
+
+    return slug;
+};
+
+export const saveCustomRoutine = async (routine: Omit<CustomRoutine, 'id' | 'slug' | 'createdAt'>): Promise<boolean> => {
     try {
         const existingRoutines = await getCustomRoutines();
+        const baseSlug = generateSlug(routine.name);
+        const uniqueSlug = await ensureUniqueSlug(baseSlug);
+
         const newRoutine: CustomRoutine = {
             ...routine,
             id: `custom_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            slug: uniqueSlug,
             createdAt: new Date().toISOString(),
         };
 
@@ -45,6 +74,16 @@ export const getCustomRoutines = async (): Promise<CustomRoutine[]> => {
     } catch (error) {
         console.error('Error getting custom routines:', error);
         return [];
+    }
+};
+
+export const getCustomRoutineBySlug = async (slug: string): Promise<CustomRoutine | null> => {
+    try {
+        const routines = await getCustomRoutines();
+        return routines.find(routine => routine.slug === slug) || null;
+    } catch (error) {
+        console.error('Error getting custom routine by slug:', error);
+        return null;
     }
 };
 
@@ -72,6 +111,17 @@ export const updateCustomRoutine = async (routineId: string, updates: Partial<Cu
         return true;
     } catch (error) {
         console.error('Error updating custom routine:', error);
+        return false;
+    }
+};
+
+export const clearAllCustomRoutines = async (): Promise<boolean> => {
+    try {
+        await AsyncStorage.removeItem(CUSTOM_ROUTINES_KEY);
+        console.log('All custom routines cleared from local storage');
+        return true;
+    } catch (error) {
+        console.error('Error clearing custom routines:', error);
         return false;
     }
 };
