@@ -94,7 +94,7 @@ export const ExerciseControls = memo(({
                 activeOpacity={0.7}
             >
                 <Entypo
-                    name={isPaused ? "controller-play" : "controller-paus"}
+                    name={isPaused ? "controller-play" : "controller-pause"}
                     size={45}
                     color="#000000"
                 />

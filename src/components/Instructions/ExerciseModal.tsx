@@ -279,7 +279,7 @@ export const ExerciseModal = memo(({
 
         const startTime = Date.now();
         const totalDuration = currentExercise.duration_seconds * 1000;
-        const pausedDuration = pausedTime * 1000; // Convert paused time to milliseconds
+        const pausedDuration = pausedTime * 1000;
 
         const timer = setInterval(() => {
             const elapsed = Date.now() - startTime + pausedDuration;
@@ -290,12 +290,10 @@ export const ExerciseModal = memo(({
             setRemainingTime(remainingSeconds);
             setElapsedTime(elapsedSeconds);
 
-            // Show next exercise preview in last 5 seconds
             if (remainingSeconds <= 5 && nextExercise) {
                 setShowNextPreview(true);
             }
 
-            // Move to next exercise when time is up
             if (remaining <= 0) {
                 clearInterval(timer);
                 setTimeout(() => {
