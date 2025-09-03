@@ -199,12 +199,12 @@ export const ExerciseModal = memo(({
                     if (typeof prev === 'number') {
                         if (prev <= 1) {
                             clearInterval(countdownInterval);
-                            // Show "START" for 1 second
+
                             setCountdownValue("START");
                             setTimeout(() => {
                                 setShowCountdown(false);
                                 setCountdownValue(3);
-                                // Add haptic feedback when exercise starts
+
                                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
                             }, 1000);
                             return "START";
@@ -229,7 +229,6 @@ export const ExerciseModal = memo(({
     const pauseExercise = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         if (!isPaused) {
-            // Pausing - store the current elapsed time
             setPausedTime(elapsedTime);
         }
         setIsPaused(!isPaused);
@@ -263,13 +262,17 @@ export const ExerciseModal = memo(({
     }, []);
 
     const handlePauseTimer = useCallback(() => {
+        console.log('handlePauseTimer');
         if (!isPaused) {
+            console.log('handlePauseTimer true');
             setIsPaused(true);
         }
     }, [isPaused]);
 
     const handleResumeTimer = useCallback(() => {
+        console.log('handleResumeTimer');
         if (isPaused) {
+            console.log('handleResumeTimer true');
             setIsPaused(false);
         }
     }, [isPaused]);
@@ -375,6 +378,7 @@ export const ExerciseModal = memo(({
                     <ExerciseControls
                         isPaused={isPaused}
                         onPause={pauseExercise}
+                        onResume={handleResumeTimer}
                         onPrevious={previousExerciseAction}
                         onNext={nextExerciseAction}
                         canGoPrevious={currentIndex > 0}
@@ -387,13 +391,12 @@ export const ExerciseModal = memo(({
                 <CountdownOverlay value={countdownValue} />
             )}
 
-            <ExerciseInfoModal
+            {showInfoModal && <ExerciseInfoModal
                 visible={showInfoModal}
                 exercise={currentExercise?.exercise || null}
                 onClose={handleCloseInfoModal}
                 onPauseTimer={handlePauseTimer}
-                onResumeTimer={handleResumeTimer}
-            />
+            />}
         </Modal>
     );
 });

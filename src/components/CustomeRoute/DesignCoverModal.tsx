@@ -15,7 +15,6 @@ import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
 import { NextButton } from '@src/components/Shared/NextButton';
 import CoverPreviewCard from '@src/components/Shared/CoverPreviewCard';
-import Gravity from '../UI/Gravity';
 import Header from '../UI/Header';
 
 const { height: screenHeight } = Dimensions.get('window');
@@ -117,7 +116,6 @@ const DesignCoverModal = memo(({
     const [isInitialized, setIsInitialized] = useState(false);
     const [userHasInteracted, setUserHasInteracted] = useState(false);
 
-    // Set default images when exercises are available (only initially)
     useEffect(() => {
         if (exercises.length > 0 && !isInitialized) {
             const defaultImages = exercises.slice(0, 3).map(ex => ex.image_url);
@@ -132,39 +130,29 @@ const DesignCoverModal = memo(({
 
     const handleSelectImage = useCallback((imageUrl: string) => {
         setSelectedImages(prev => {
-            // If this is the first user interaction, clear all default images
             if (!userHasInteracted) {
                 setUserHasInteracted(true);
-                // Put selected image in center, clear others
                 return [imageUrl, '', ''];
             }
 
-            // Find current position of the image
             const currentPosition = prev.findIndex(img => img === imageUrl);
 
             if (currentPosition === -1) {
-                // Image not currently selected
-                // Find first empty slot, prioritizing center → right → left
                 if (!prev[0]) {
-                    return [imageUrl, prev[1], prev[2]]; // center
+                    return [imageUrl, prev[1], prev[2]];
                 } else if (!prev[1]) {
-                    return [prev[0], imageUrl, prev[2]]; // right
+                    return [prev[0], imageUrl, prev[2]];
                 } else if (!prev[2]) {
-                    return [prev[0], prev[1], imageUrl]; // left
+                    return [prev[0], prev[1], imageUrl];
                 } else {
-                    // All slots filled, replace center
                     return [imageUrl, prev[1], prev[2]];
                 }
             } else {
-                // Image is already selected, cycle through positions
                 if (currentPosition === 0) {
-                    // Currently in center, move to left
                     return ['', prev[1], imageUrl];
                 } else if (currentPosition === 2) {
-                    // Currently in left, move to right
                     return [prev[0], imageUrl, ''];
                 } else {
-                    // Currently in right, move to center
                     return [imageUrl, '', prev[2]];
                 }
             }

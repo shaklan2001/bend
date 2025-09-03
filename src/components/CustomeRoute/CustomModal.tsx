@@ -20,7 +20,6 @@ import { NextButton } from '@src/components/Shared/NextButton';
 import Gravity from '../UI/Gravity';
 import DurationModal from './DurationModal';
 import Header from '../UI/Header';
-
 const { height: screenHeight } = Dimensions.get('window');
 
 interface Exercise {
@@ -87,7 +86,6 @@ const ExerciseCard = memo(({
                     />
                 </View>
             </View>
-
             <Text style={[FontStyles.bodySmall, {
                 color: '#374151',
                 fontWeight: '500',
@@ -219,7 +217,6 @@ const CustomModal = memo(({
     visible,
     onClose
 }: RoutineBottomSheetProps) => {
-    const router = useRouter();
     const slideAnim = useRef(new Animated.Value(screenHeight)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const [isClosing, setIsClosing] = useState(false);
@@ -339,7 +336,6 @@ const CustomModal = memo(({
             onRequestClose={handleClose}
         >
             <StatusBar style="dark" />
-
             <Animated.View
                 className="flex-1 bg-black/50"
                 style={{ opacity: fadeAnim }}

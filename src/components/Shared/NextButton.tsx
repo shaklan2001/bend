@@ -2,8 +2,6 @@ import { FontStyles } from "@src/lib/fonts";
 import { memo } from "react";
 import { TouchableOpacity, Text } from "react-native";
 
-
-
 export const NextButton = memo(({ onPress }: { onPress: () => void }) => (
     <TouchableOpacity
         onPress={onPress}

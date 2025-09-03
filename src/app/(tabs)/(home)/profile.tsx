@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import { View, Text, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
@@ -47,62 +47,57 @@ const ProfileScreen = () => {
   const [showCreateAccount, setShowCreateAccount] = useState(false);
   const [showLogIn, setShowLogIn] = useState(false);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     router.back();
-  };
+  }, [router]);
 
-  const handleCreateAccount = () => {
+  const handleCreateAccount = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setShowCreateAccount(true);
-  };
+  }, []);
 
-  const handleLogIn = () => {
+  const handleLogIn = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setShowLogIn(true);
-  };
+  }, []);
 
-  const handleNotifications = () => {
+  const handleNotifications = useCallback(() => {
     console.log('Notifications pressed');
-    // Add your navigation logic here
-  };
+  }, []);
 
-  const handleReferralCode = () => {
+  const handleReferralCode = useCallback(() => {
     console.log('Referral Code pressed');
-    // Add your navigation logic here
-  };
+  }, []);
 
-  const handleContactSupport = () => {
+  const handleContactSupport = useCallback(() => {
     console.log('Contact Support pressed');
-    // Add your navigation logic here
-  };
+  }, []);
 
-  const handleTermsOfUse = () => {
+  const handleTermsOfUse = useCallback(() => {
     console.log('Terms of Use pressed');
-    // Add your navigation logic here
-  };
+  }, []);
 
-  const handlePrivacyPolicy = () => {
+  const handlePrivacyPolicy = useCallback(  () => {
     console.log('Privacy Policy pressed');
-    // Add your navigation logic here
-  };
+  }, []);
 
-  const closeCreateAccount = () => {
+  const closeCreateAccount = useCallback(() => {
     setShowCreateAccount(false);
-  };
+  }, []);
 
-  const closeLogIn = () => {
+  const closeLogIn = useCallback(() => {
     setShowLogIn(false);
-  };
+  }, []);
 
-  const switchToLogIn = () => {
+  const switchToLogIn = useCallback(() => {
     setShowCreateAccount(false);
     setShowLogIn(true);
-  };
+  }, []);
 
-  const switchToCreateAccount = () => {
+  const switchToCreateAccount = useCallback(() => {
     setShowLogIn(false);
     setShowCreateAccount(true);
-  };
+  }, []);
 
   return (
     <SafeAreaView className="flex-1 bg-white">

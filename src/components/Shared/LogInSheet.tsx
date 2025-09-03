@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, memo } from 'react';
+import React, { useState, useRef, useEffect, memo, useCallback } from 'react';
 import {
     View,
     Text,
@@ -75,13 +75,13 @@ const LogInSheet: React.FC<LogInSheetProps> = ({ visible, onClose, onSwitchToCre
         }
     }, [visible]);
 
-    const handleLogIn = () => {
+    const handleLogIn = useCallback(() => {
         console.log('Log In:', { email, password });
-    };
+    }, [email, password]);
 
-    const handleForgotPassword = () => {
+    const handleForgotPassword = useCallback(() => {
         console.log('Forgot password pressed');
-    };
+    }, []);
 
     return (
         <Modal

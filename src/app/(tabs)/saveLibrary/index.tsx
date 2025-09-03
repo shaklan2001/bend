@@ -14,7 +14,6 @@ import * as Haptics from 'expo-haptics';
 import { getSavedRoutines, SavedRoutine } from '../../../lib/saveRoutine';
 import { RoutineCard } from '../../../components/HomePage/RoutineBottomSheet';
 
-// Memoized Saved Routine Card Component (without delete button)
 const SavedRoutineCard = memo(({ routine, onPress }: {
   routine: SavedRoutine,
   onPress: (routine: SavedRoutine) => void,
@@ -29,7 +28,6 @@ const SavedRoutineCard = memo(({ routine, onPress }: {
   );
 });
 
-// Memoized Empty State Component matching the image
 const EmptyState = memo(() => (
   <View className="flex-1 justify-center items-center px-6">
     <MaterialCommunityIcons
@@ -57,7 +55,6 @@ const EmptyState = memo(() => (
   </View>
 ));
 
-// Memoized Header Component
 const Header = memo(() => (
   <View className="flex-row items-center justify-center px-6 py-4 border-b border-gray-100">
     <Text style={[FontStyles.heading1, {
@@ -90,7 +87,6 @@ const SaveLibrary = () => {
     loadSavedRoutines();
   }, [loadSavedRoutines]);
 
-  // Refresh saved routines when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       loadSavedRoutines();

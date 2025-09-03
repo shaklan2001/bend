@@ -20,17 +20,16 @@ export interface CustomRoutine {
 
 const CUSTOM_ROUTINES_KEY = 'customRoutines';
 
-// Generate a URL-friendly slug from routine name
 const generateSlug = (name: string): string => {
     return name
         .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-        .replace(/\s+/g, '-') // Replace spaces with hyphens
-        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .replace(/[^a-z0-9\s-]/g, '') 
+        .replace(/\s+/g, '-') 
+        .replace(/-+/g, '-') 
         .trim();
 };
 
-// Ensure unique slug by appending number if needed
+
 const ensureUniqueSlug = async (baseSlug: string): Promise<string> => {
     const existingRoutines = await getCustomRoutines();
     let slug = baseSlug;

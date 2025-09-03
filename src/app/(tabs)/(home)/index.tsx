@@ -62,8 +62,6 @@ const HomeHeader = memo(({ day, month, dayName, handleProfilePress, handleResetP
                             RESET
                         </Text>
                     </TouchableOpacity>
-
-                    {/* Profile Button */}
                     <TouchableOpacity
                         onPress={handleProfilePress}
                         style={{
@@ -154,7 +152,7 @@ const Home = () => {
     const [isLoadingBodyParts, setIsLoadingBodyParts] = useState(true);
     const [bodyPartsError, setBodyPartsError] = useState<string | null>(null);
 
-    async function getBodyParts() {
+    const getBodyParts = useCallback(async () => {
         try {
             setIsLoadingBodyParts(true);
             setBodyPartsError(null);
@@ -189,7 +187,7 @@ const Home = () => {
         } finally {
             setIsLoadingBodyParts(false);
         }
-    };
+    }, []);
 
 
     useEffect(() => {
@@ -205,14 +203,14 @@ const Home = () => {
         });
     }, [bodyParts, isLoadingBodyParts, bodyPartsError]);
 
-    const getCurrentDate = () => {
+    const getCurrentDate = useCallback(() => {
         const now = new Date();
         const day = now.getDate();
         const month = now.toLocaleString('en-US', { month: 'long' }).toUpperCase();
         const dayName = now.toLocaleString('en-US', { weekday: 'long' });
 
         return { day, month, dayName };
-    };
+    }, []);
 
     const { day, month, dayName } = getCurrentDate();
 
@@ -220,7 +218,7 @@ const Home = () => {
             router.push('/(tabs)/(home)/profile');
         }, [router]);
 
-    const handleResetPress = async () => {
+    const handleResetPress = useCallback(async () => {
         try {
             const allKeys = await AsyncStorage.getAllKeys();
 
@@ -238,12 +236,11 @@ const Home = () => {
                 await AsyncStorage.multiRemove(keysToRemove);
                 console.log('Cleared keys:', keysToRemove);
             }
-
             router.replace('/intro');
         } catch (error) {
             console.error('Error resetting onboarding state:', error);
         }
-    };
+    }, []);
 
     const handleSearchPress = useCallback(() => {
         setIsSearchModalVisible(true);
@@ -253,8 +250,6 @@ const Home = () => {
     return (
         <SafeAreaView className="flex-1 bg-white">
             <StatusBar style="dark" />
-
-
             <ScrollView>
                 <HomeHeader
                     day={day}
@@ -272,7 +267,6 @@ const Home = () => {
                     onRetry={getBodyParts}
                 />
                 <RecommendedRoutines />
-
             </ScrollView>
             <SearchModal
                 visible={isSearchModalVisible}

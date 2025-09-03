@@ -66,7 +66,6 @@ const Header = memo(({ handleBack, routine }: { handleBack: () => void, routine:
             >
                 <Entypo name="cross" size={34} color="#D3D3D3" />
             </TouchableOpacity>
-
             <View className="flex-1 items-center">
                 <Text style={[FontStyles.heading2, {
                     color: '#000000',
@@ -81,7 +80,6 @@ const Header = memo(({ handleBack, routine }: { handleBack: () => void, routine:
         </View>
     );
 });
-
 
 
 const ExerciseCard = memo(({ exercise, duration, sequence, onDurationChange }: {
@@ -352,7 +350,6 @@ const RoutineDetail = () => {
 
     const handleCompleteRoutine = useCallback(() => {
         setShowExerciseModal(false);
-        // You can add completion logic here (e.g., show completion screen, save progress, etc.)
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }, []);
 

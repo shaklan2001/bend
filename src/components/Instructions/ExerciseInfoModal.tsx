@@ -25,7 +25,6 @@ interface ExerciseInfoModalProps {
     exercise: Exercise | null;
     onClose: () => void;
     onPauseTimer?: () => void;
-    onResumeTimer?: () => void;
 }
 
 const exerciseInfoModalStyles = {
@@ -69,18 +68,15 @@ export const ExerciseInfoModal = memo(({
     visible,
     exercise,
     onClose,
-    onPauseTimer,
-    onResumeTimer
+    onPauseTimer
 }: ExerciseInfoModalProps) => {
     if (!exercise) return null;
 
     useEffect(() => {
         if (visible && onPauseTimer) {
             onPauseTimer();
-        } else if (!visible && onResumeTimer) {
-            onResumeTimer();
         }
-    }, [visible, onPauseTimer, onResumeTimer]);
+    }, [visible, onPauseTimer]);
 
     return (
         <Modal

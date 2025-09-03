@@ -36,10 +36,10 @@ const RecommendedCard = memo(({ data, index, scrollX }: {
         extrapolate: 'clamp',
     });
 
-    const handleCardPress = () => {
+    const handleCardPress = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         router.push(`/routine/${data.slug}`);
-    };
+    }, [data.slug]);
 
     return (
         <Animated.View style={{

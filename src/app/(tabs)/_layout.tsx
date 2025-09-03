@@ -1,5 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { Tabs } from "expo-router";
+import { useCallback } from 'react';
 import { Platform, StyleSheet, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { G, Mask, Path, Rect, Svg } from 'react-native-svg';
@@ -133,10 +134,10 @@ export const GearIcon = (props: any) => {
 };
 
 const CustomTabButton = (props: any) => {
-    const handlePress = () => {
+    const handlePress = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         props.onPress();
-    };
+    }, [props.onPress]);
 
     return (
         <TouchableOpacity

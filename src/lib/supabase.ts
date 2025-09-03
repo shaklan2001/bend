@@ -1,4 +1,3 @@
-// src/lib/supabase.ts
 import 'react-native-url-polyfill/auto'
 import 'react-native-get-random-values'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -12,7 +11,6 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     storage: AsyncStorage,
     autoRefreshToken: true,
     persistSession: true,
-    // RN doesn’t use URL fragments for auth:
     detectSessionInUrl: false,
   },
 });

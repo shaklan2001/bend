@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, memo } from 'react';
+import React, { useState, useRef, useEffect, memo, useCallback } from 'react';
 import {
     View,
     Text,
@@ -115,15 +115,15 @@ const CreateAccountSheet: React.FC<CreateAccountSheetProps> = ({ visible, onClos
         }
     }, [visible]);
 
-    const handleContinue = () => {
+    const handleContinue = useCallback(() => {
         console.log('Create Account:', { firstName, email, confirmEmail, password });
-    };
+    }, [firstName, email, confirmEmail, password]);
 
-    const handleLogIn = () => {
+    const handleLogIn = useCallback(() => {
         if (onSwitchToLogIn) {
             onSwitchToLogIn();
         }
-    };
+    }, [onSwitchToLogIn]);
 
 
     return (
@@ -148,7 +148,6 @@ const CreateAccountSheet: React.FC<CreateAccountSheetProps> = ({ visible, onClos
                     }}
                 >
                     <SafeAreaView style={{ flex: 1 }}>
-                        {/* Header */}
                         <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-100">
                             <TouchableOpacity
                                 onPress={onClose}
@@ -189,7 +188,6 @@ const CreateAccountSheet: React.FC<CreateAccountSheetProps> = ({ visible, onClos
                                             outputRange: [1, 0],
                                         }),
                                     }}>
-                                        {/* Instructional Text */}
                                         <Text style={[FontStyles.bodyMedium, {
                                             color: '#6B7280',
                                             textAlign: 'center',
@@ -198,8 +196,6 @@ const CreateAccountSheet: React.FC<CreateAccountSheetProps> = ({ visible, onClos
                                         }]}>
                                             Create an account to save your progress and profile.
                                         </Text>
-
-                                        {/* Form Fields with increased spacing */}
                                         <View className="space-y-6 mb-16 gap-2">
                                             <MemoizedInput
                                                 value={firstName}
@@ -263,7 +259,6 @@ const CreateAccountSheet: React.FC<CreateAccountSheetProps> = ({ visible, onClos
                                     </Animated.View>
                                 </ScrollView>
                             </KeyboardAvoidingView>
-
                             <Animated.View
                                 className="px-6 pb-6"
                                 style={{

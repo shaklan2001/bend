@@ -58,7 +58,6 @@ const CreateRoutineCard = memo(({ onPress }: { onPress: () => void }) => {
       activeOpacity={0.8}
     >
       <TriangularPatternIcon />
-
       <Text style={[FontStyles.heading2, {
         color: '#374151',
         fontWeight: '700',

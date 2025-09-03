@@ -1,45 +1,41 @@
-// Font configuration for the BendApp
+
 export const Fonts = {
-    // Thin weights
+
     thin: 'Metropolis-Thin',
     thinItalic: 'Metropolis-ThinItalic',
 
-    // Extra Light weights
     extraLight: 'Metropolis-ExtraLight',
     extraLightItalic: 'Metropolis-ExtraLightItalic',
 
-    // Light weights
     light: 'Metropolis-Light',
     lightItalic: 'Metropolis-LightItalic',
 
-    // Regular weights
     regular: 'Metropolis-Regular',
     regularItalic: 'Metropolis-RegularItalic',
 
-    // Medium weights
     medium: 'Metropolis-Medium',
     mediumItalic: 'Metropolis-MediumItalic',
 
-    // Semi Bold weights
+
     semiBold: 'Metropolis-SemiBold',
     semiBoldItalic: 'Metropolis-SemiBoldItalic',
 
-    // Bold weights
+
     bold: 'Metropolis-Bold',
     boldItalic: 'Metropolis-BoldItalic',
 
-    // Extra Bold weights
+
     extraBold: 'Metropolis-ExtraBold',
     extraBoldItalic: 'Metropolis-ExtraBoldItalic',
 
-    // Black weights
+
     black: 'Metropolis-Black',
     blackItalic: 'Metropolis-BlackItalic',
 } as const;
 
-// Common font combinations for different use cases
+
 export const FontStyles = {
-    // Headings
+
     heading1: {
         fontFamily: Fonts.bold,
         fontWeight: '600',
@@ -57,7 +53,7 @@ export const FontStyles = {
         lineHeight: 28,
     },
 
-    // Body text
+
     bodyLarge: {
         fontFamily: Fonts.regular,
         fontSize: 18,
@@ -79,7 +75,6 @@ export const FontStyles = {
         lineHeight: 18,
     },
 
-    // Buttons and interactive elements
     button: {
         fontFamily: Fonts.semiBold,
         fontSize: 16,
@@ -91,7 +86,6 @@ export const FontStyles = {
         lineHeight: 26,
     },
 
-    // Special text
     logo: {
         fontFamily: Fonts.bold,
         fontSize: 64,

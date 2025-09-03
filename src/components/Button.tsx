@@ -58,7 +58,6 @@ export default function Button({
     );
 }
 
-// Gradient Button Component
 interface GradientButtonProps extends TouchableOpacityProps {
     title: string;
     colors?: string[];

@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
 
@@ -9,6 +9,7 @@ interface ExerciseControlsProps {
     onNext: () => void;
     canGoPrevious: boolean;
     isLastExercise: boolean;
+    onResume: () => void;
 }
 
 const exerciseControlsStyles = StyleSheet.create({
@@ -55,21 +56,26 @@ export const ExerciseControls = memo(({
     onNext,
     canGoPrevious,
     isLastExercise,
+    onResume,
 }: ExerciseControlsProps) => {
 
-    const handlePrevious = () => {
+    const handlePrevious = useCallback(() => {
         if (canGoPrevious) {
             onPrevious();
         }
-    };
+    }, [onPrevious, canGoPrevious]);
 
-    const handleNext = () => {
+    const handleNext = useCallback(() => {
         onNext();
-    };
+    }, [onNext]);
 
-    const handlePause = () => {
-        onPause();
-    };
+    const handlePause = useCallback(() => {
+        if (!isPaused) {
+            onPause();
+        } else {
+            onResume();
+        }
+    }, [onPause, onResume, isPaused]);
 
     return (
         <View className="flex-row justify-center items-center px-6 py-5 mb-2.5 gap-8">
@@ -94,7 +100,7 @@ export const ExerciseControls = memo(({
                 activeOpacity={0.7}
             >
                 <Entypo
-                    name={isPaused ? "controller-play" : "controller-pause"}
+                    name={isPaused ? "controller-play" : "controller-paus"}
                     size={45}
                     color="#000000"
                 />

@@ -1,14 +1,11 @@
 import React, { memo, useEffect, useRef, useState, useCallback } from 'react';
 import {
     View,
-    Text,
-    TouchableOpacity,
     Modal,
     SafeAreaView,
     ScrollView,
     Animated,
     Dimensions,
-    Image,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
@@ -40,8 +37,6 @@ interface DurationModalProps {
     exercises: ExerciseWithDuration[];
     onSave: (exercises: ExerciseWithDuration[]) => void;
 }
-
-
 
 const DurationModal = memo(({
     visible,
@@ -157,7 +152,6 @@ const DurationModal = memo(({
             onRequestClose={handleClose}
         >
             <StatusBar style="dark" />
-
             <Animated.View
                 style={{
                     flex: 1,
@@ -180,7 +174,6 @@ const DurationModal = memo(({
                 >
                     <SafeAreaView style={{ flex: 1 }}>
                         <Header title="Choose Lengths" onClose={handleClose} />
-
                         <ScrollView
                             style={{ flex: 1 }}
                             contentContainerStyle={{
@@ -198,7 +191,6 @@ const DurationModal = memo(({
                                 />
                             ))}
                         </ScrollView>
-
                         <Gravity>
                             <View style={{
                                 position: 'absolute',
@@ -215,13 +207,12 @@ const DurationModal = memo(({
                 </Animated.View>
             </Animated.View>
 
-            {/* Design Cover Modal */}
-            <DesignCoverModal
+            {isDesignCoverModalVisible && <DesignCoverModal
                 visible={isDesignCoverModalVisible}
                 onClose={() => setIsDesignCoverModalVisible(false)}
                 exercises={exercisesWithDuration}
                 onFinish={handleDesignCoverFinish}
-            />
+            />}
         </Modal>
     );
 });

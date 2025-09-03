@@ -222,14 +222,13 @@ const BrowseByArea = memo(({ bodyParts = [], isLoading = false, error = null, on
                     onAreaPress={handleAreaPress}
                 />
             </View>
-
-            <RoutineBottomSheet
+            {isRoutineBottomSheetVisible && <RoutineBottomSheet
                 visible={isRoutineBottomSheetVisible}
                 onClose={handleCloseRoutineBottomSheet}
                 bodyPart={selectedBodyPart}
                 routines={routines}
                 isLoading={isLoadingRoutines}
-            />
+            />}
         </>
     );
 });
