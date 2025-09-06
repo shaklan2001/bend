@@ -1,5 +1,5 @@
 import React, { memo, useRef, useCallback } from "react";
-import { View, Text, ScrollView, Dimensions, Animated, Image, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, Animated, Image, TouchableOpacity } from "react-native";
 import { FontStyles } from '../../lib/fonts';
 import * as Haptics from 'expo-haptics';
 import { router } from "expo-router";
@@ -11,13 +11,104 @@ const SPACING = 16;
 const FOCUSED_SCALE = 1;
 const ADJACENT_SCALE = 0.95;
 
-const RecommendedCard = memo(({ data, index, scrollX }: {
-    data: RoutineCard,
-    index: number,
-    scrollX: Animated.Value
+export const BaseRecommendedCard = memo(({
+    data,
+    onPress,
+    style = {},
+    showAnimation = true,
+    index = 0,
+    scrollX
+}: {
+    data: any,
+    onPress?: (data: any) => void,
+    style?: any,
+    showAnimation?: boolean,
+    index?: number,
+    scrollX?: Animated.Value
 }) => {
-    const cardPosition = index * (CARD_WIDTH + SPACING);
+    const handleCardPress = useCallback(() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        if (onPress) {
+            onPress(data);
+        } else {
+            router.push(`/routine/${data.slug}`);
+        }
+    }, [data, onPress]);
 
+    const cardContent = (
+        <TouchableOpacity
+            onPress={handleCardPress}
+            activeOpacity={0.8}
+        >
+            <View style={{
+                backgroundColor: '#FFFFFF',
+                borderRadius: 30,
+                padding: 20,
+                width: CARD_WIDTH,
+                height: CARD_HEIGHT,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+                elevation: 4,
+                alignItems: 'flex-start',
+                justifyContent: 'center',
+            }}>
+                <View style={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 30,
+                    backgroundColor: data.backgroundColor || '#A69B8A2A',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginBottom: 16,
+                    overflow: 'hidden',
+                }}>
+                    <Image
+                        source={data.image ? data.image : { uri: data.image_url || 'https://placehold.co/60x60/f3f4f6/9ca3af?text=Yoga' }}
+                        style={{
+                            width: 50,
+                            height: 50,
+                            borderRadius: 25,
+                        }}
+                        resizeMode="cover"
+                    />
+                </View>
+
+                <Text style={[FontStyles.bodyLarge, {
+                    color: '#000000',
+                    fontWeight: '700',
+                    fontSize: 20,
+                    textAlign: 'center'
+                }]} numberOfLines={2}>
+                    {data.title || data.name}
+                </Text>
+
+                <Text style={[FontStyles.bodyMedium, {
+                    color: '#9CA3AF',
+                    fontWeight: '700',
+                    fontSize: 14,
+                    textAlign: 'center',
+                }]}>
+                    {data.duration || `${data.total_duration_minutes} MINUTES`}
+                </Text>
+            </View>
+        </TouchableOpacity>
+    );
+
+    if (!showAnimation || !scrollX) {
+        return (
+            <View style={[{
+                paddingTop: 10,
+                paddingBottom: 10,
+                marginRight: 16,
+            }, style]}>
+                {cardContent}
+            </View>
+        );
+    }
+
+    const cardPosition = index * (CARD_WIDTH + SPACING);
     const inputRange = [
         cardPosition - (CARD_WIDTH + SPACING),
         cardPosition,
@@ -36,78 +127,31 @@ const RecommendedCard = memo(({ data, index, scrollX }: {
         extrapolate: 'clamp',
     });
 
-    const handleCardPress = useCallback(() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        router.push(`/routine/${data.slug}`);
-    }, [data.slug]);
-
     return (
-        <Animated.View style={{
+        <Animated.View style={[{
             transform: [{ scale }],
             opacity,
             paddingTop: 10,
             paddingBottom: 10,
             marginRight: index === recommendedData.length - 1 ? 0 : SPACING,
-        }}>
-            <TouchableOpacity
-                onPress={handleCardPress}
-                activeOpacity={0.8}
-            >
-                <View style={{
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: 30,
-                    padding: 20,
-                    width: CARD_WIDTH,
-                    height: CARD_HEIGHT,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.2,
-                    shadowRadius: 8,
-                    elevation: 4,
-                    alignItems: 'flex-start',
-                    justifyContent: 'center',
-                }}>
-                    <View style={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: 30,
-                        backgroundColor: data.backgroundColor,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginBottom: 16,
-                        overflow: 'hidden',
-                    }}>
-                        <Image
-                            source={data.image}
-                            style={{
-                                width: 50,
-                                height: 50,
-                                borderRadius: 25,
-                            }}
-                            resizeMode="cover"
-                        />
-                    </View>
-
-                    <Text style={[FontStyles.bodyLarge, {
-                        color: '#000000',
-                        fontWeight: '700',
-                        fontSize: 20,
-                        textAlign: 'center'
-                    }]}>
-                        {data.title}
-                    </Text>
-
-                    <Text style={[FontStyles.bodyMedium, {
-                        color: '#9CA3AF',
-                        fontWeight: '700',
-                        fontSize: 14,
-                        textAlign: 'center',
-                    }]}>
-                        {data.duration}
-                    </Text>
-                </View>
-            </TouchableOpacity>
+        }, style]}>
+            {cardContent}
         </Animated.View>
+    );
+});
+
+export const RecommendedCard = memo(({ data, index, scrollX }: {
+    data: RoutineCard,
+    index: number,
+    scrollX: Animated.Value
+}) => {
+    return (
+        <BaseRecommendedCard
+            data={data}
+            index={index}
+            scrollX={scrollX}
+            showAnimation={true}
+        />
     );
 });
 

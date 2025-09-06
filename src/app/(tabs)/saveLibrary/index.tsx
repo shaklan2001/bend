@@ -4,7 +4,6 @@ import {
   Text,
   SafeAreaView,
   ScrollView,
-  TouchableOpacity,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -12,21 +11,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontStyles } from '../../../lib/fonts';
 import * as Haptics from 'expo-haptics';
 import { getSavedRoutines, SavedRoutine } from '../../../lib/saveRoutine';
-import { RoutineCard } from '../../../components/HomePage/RoutineBottomSheet';
+import { HistoryList } from '../../../components/Shared/HistoryList';
+import { loadHistory, HistoryItem } from '../../../lib/historyManager';
+import { BaseRecommendedCard } from '../../../components/HomePage/RecommendedRoutines';
 
-const SavedRoutineCard = memo(({ routine, onPress }: {
-  routine: SavedRoutine,
-  onPress: (routine: SavedRoutine) => void,
-}) => {
-  const handlePress = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    onPress(routine);
-  }, [routine, onPress]);
-
-  return (
-    <RoutineCard routine={routine} onPress={handlePress} />
-  );
-});
 
 const EmptyState = memo(() => (
   <View className="flex-1 justify-center items-center px-6">
@@ -69,15 +57,20 @@ const Header = memo(() => (
 const SaveLibrary = () => {
   const router = useRouter();
   const [savedRoutines, setSavedRoutines] = useState<SavedRoutine[]>([]);
+  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadSavedRoutines = useCallback(async () => {
     try {
       setIsLoading(true);
-      const routines = await getSavedRoutines();
+      const [routines, history] = await Promise.all([
+        getSavedRoutines(),
+        loadHistory()
+      ]);
       setSavedRoutines(routines);
+      setHistoryItems(history);
     } catch (error) {
-      console.error('Error loading saved routines:', error);
+      console.error('Error loading data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -93,7 +86,7 @@ const SaveLibrary = () => {
     }, [loadSavedRoutines])
   );
 
-  const handleRoutinePress = useCallback((routine: SavedRoutine) => {
+  const handleRoutinePress = useCallback((routine: SavedRoutine | any) => {
     router.push(`/routine/${routine.slug}`);
   }, [router]);
 
@@ -117,20 +110,42 @@ const SaveLibrary = () => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
-
       <Header />
-
-      {savedRoutines.length === 0 ? (
+      {savedRoutines.length === 0 && historyItems.length === 0 ? (
         <EmptyState />
       ) : (
-        <ScrollView className="flex-1 px-6 py-4" showsVerticalScrollIndicator={false}>
-          {sortedRoutines.map((routine) => (
-            <SavedRoutineCard
-              key={routine.id}
-              routine={routine}
-              onPress={handleRoutinePress}
-            />
-          ))}
+        <ScrollView className="flex-1 py-4" showsVerticalScrollIndicator={false}>
+          {savedRoutines.length > 0 && (
+            <View className="px-6 mb-6">
+              <Text style={[FontStyles.bodyMedium, {
+                color: '#9CA3AF',
+                fontWeight: '700',
+                textTransform: 'uppercase',
+                marginBottom: 4,
+                fontSize: 14,
+                letterSpacing: 1,
+                opacity: 0.6,
+              }]}>
+                MY FAVORITES
+              </Text>
+
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 10, paddingVertical: 6 }}
+              >
+                {sortedRoutines.map((routine) => (
+                  <BaseRecommendedCard
+                    key={routine.id}
+                    data={routine}
+                    onPress={handleRoutinePress}
+                    showAnimation={false}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          )}
+          <HistoryList items={historyItems} maxItems={20} />
         </ScrollView>
       )}
     </SafeAreaView>

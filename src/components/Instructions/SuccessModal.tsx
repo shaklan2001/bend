@@ -12,6 +12,7 @@ import { StatusBar } from 'expo-status-bar';
 import LottieView from 'lottie-react-native';
 import { FontStyles } from '../../lib/fonts';
 import { router } from 'expo-router';
+import { completeToday } from '../../lib/streakManager';
 
 
 interface SuccessModalProps {
@@ -103,17 +104,46 @@ export const SuccessModal = memo(({
         }
     }, [visible, congratsAnim, descriptionAnim, statsAnim, buttonAnim]);
 
-    const handleAddToStreak = useCallback(() => {
-        router.replace({
-            pathname: '/streak',
-            params: {
-                exercisesCount: exercisesCount.toString(),
-                totalMinutes: totalMinutes.toString(),
-                routineName: routineName,
-                routineSlug: routineSlug,
-            }
-        });
-        onClose();
+    const handleAddToStreak = useCallback(async () => {
+        try {
+            await completeToday({
+                id: routineSlug || 'unknown',
+                name: routineName || 'Daily Routine',
+                duration: totalMinutes,
+                slug: routineSlug || '',
+                exercisesCount: exercisesCount,
+                totalMinutes: totalMinutes,
+            });
+
+            router.replace({
+                pathname: '/streak',
+                params: {
+                    exercisesCount: exercisesCount.toString(),
+                    totalMinutes: totalMinutes.toString(),
+                    routineName: routineName,
+                    routineSlug: routineSlug,
+                }
+            });
+
+            setTimeout(() => {
+                onClose();
+            }, 100);
+
+        } catch (error) {
+            console.error('Error completing routine:', error);
+            router.replace({
+                pathname: '/streak',
+                params: {
+                    exercisesCount: exercisesCount.toString(),
+                    totalMinutes: totalMinutes.toString(),
+                    routineName: routineName,
+                    routineSlug: routineSlug,
+                }
+            });
+            setTimeout(() => {
+                onClose();
+            }, 100);
+        }
     }, [onClose, exercisesCount, totalMinutes, routineName, routineSlug]);
 
 

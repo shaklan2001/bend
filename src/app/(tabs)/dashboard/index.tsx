@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, memo } from 'react';
+import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,10 @@ import {
 import { FontStyles } from '../../../lib/fonts';
 import { ShareButton } from '../../../components/Button';
 import * as Haptics from 'expo-haptics';
+import { getDashboardStats, useStreakRestore, DashboardStats } from '../../../lib/streakManager';
+import { Calendar } from '../../../components/Shared/Calendar';
+import { HistoryList } from '../../../components/Shared/HistoryList';
+import { loadHistory, getMonthlyProgress, HistoryItem, clearHistory } from '../../../lib/historyManager';
 
 
 const Header = memo(() => (
@@ -110,7 +114,7 @@ const Bendometer = memo(() => {
             borderRightColor: 'transparent',
             transform: [{ rotate: '90deg' }],
           }} />
-          
+
           {progress > 0 && (
             <View style={{
               position: 'absolute',
@@ -123,7 +127,7 @@ const Bendometer = memo(() => {
               transform: [{ rotate: '-45deg' }],
             }} />
           )}
-          
+
           <View style={{
             position: 'absolute',
             width: 16,
@@ -134,7 +138,7 @@ const Bendometer = memo(() => {
             top: radius + radius * 0.707 - 8 + strokeWidth,
           }} />
         </View>
-        
+
         <View style={{
           position: 'absolute',
           top: 0,
@@ -144,8 +148,8 @@ const Bendometer = memo(() => {
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-          <Text style={[FontStyles.heading1, { 
-            color: '#111827', 
+          <Text style={[FontStyles.heading1, {
+            color: '#111827',
             fontWeight: '800',
             fontSize: 60,
             lineHeight: 70,
@@ -200,49 +204,99 @@ const StatCard = memo(({ title, value, icon }: {
   </View>
 ));
 
-const StatsSection = memo(() => (
-  <View className="px-6 mb-14">
-    <Text style={[FontStyles.bodyMedium, {
-      color: '#6B7280',
-      fontWeight: '700',
-      textTransform: 'uppercase',
-      marginBottom: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: '#E5E7EB',
-      paddingBottom: 8,
-      opacity: 0.8,
-    }]}>
-      MY STATS
-    </Text>
+const StatsSection = memo(({ dashboardStats, isLoading }: {
+  dashboardStats: DashboardStats | null,
+  isLoading: boolean
+}) => {
+  const formatLastStretch = (lastStretchDate: string | null) => {
+    if (!lastStretchDate) return '-';
+    const date = new Date(lastStretchDate);
+    const today = new Date();
+    const diffTime = Math.abs(today.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    <View className="flex-row">
-      <StatCard title="ACTIVE STREAK" value="-" />
-      <StatCard title="LONGEST STREAK" value="-" />
+    if (diffDays === 1) return 'Today';
+    if (diffDays === 2) return 'Yesterday';
+    return `${diffDays} days ago`;
+  };
+
+  return (
+    <View className="px-6 mb-14">
+      <Text style={[FontStyles.bodyMedium, {
+        color: '#6B7280',
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        marginBottom: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E7EB',
+        paddingBottom: 8,
+        opacity: 0.8,
+      }]}>
+        MY STATS
+      </Text>
+
+      <View className="flex-row">
+        <StatCard
+          title="ACTIVE STREAK"
+          value={isLoading ? '...' : (dashboardStats?.activeStreak.toString() || '0')}
+        />
+        <StatCard
+          title="LONGEST STREAK"
+          value={isLoading ? '...' : (dashboardStats?.longestStreak.toString() || '0')}
+        />
+      </View>
+
+      <View className="flex-row mt-6">
+        <StatCard
+          title="DAYS COMPLETED"
+          value={isLoading ? '...' : (dashboardStats?.daysCompleted.toString() || '0')}
+        />
+        <StatCard
+          title="LAST STRETCH"
+          value={isLoading ? '...' : formatLastStretch(dashboardStats?.lastStretchDate || null)}
+        />
+      </View>
     </View>
+  );
+});
 
-    <View className="flex-row mt-6">
-      <StatCard title="DAYS COMPLETED" value="-" />
-      <StatCard title="LAST STRETCH" value="-" />
-    </View>
-  </View>
-));
-
-const ActionButtons = memo(() => {
-  const handleRestoreStreak = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, []);
+const ActionButtons = memo(({
+  dashboardStats,
+  onStreakRestored
+}: {
+  dashboardStats: DashboardStats | null,
+  onStreakRestored: () => void
+}) => {
+  const handleRestoreStreak = useCallback(async () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      const result = await useStreakRestore();
+      if (result) {
+        onStreakRestored();
+        // You might want to show a success message here
+      } else {
+        // Show error or no restores available message
+        console.log('No streak restores available');
+      }
+    } catch (error) {
+      console.error('Error restoring streak:', error);
+    }
+  }, [onStreakRestored]);
 
   const handleShareStats = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    // Share functionality here
   }, []);
+
+  const canRestoreStreak = dashboardStats && dashboardStats.activeStreak === 0;
 
   return (
     <View className="px-8 mb-6 gap-2">
       <ShareButton
-        title="Restore Streak"
+        title={canRestoreStreak ? "Restore Streak" : "Restore Streak (Not Available)"}
         icon="restore"
         size="lg"
-        onPress={handleRestoreStreak}
+        onPress={canRestoreStreak ? handleRestoreStreak : () => { }}
       />
 
       <ShareButton
@@ -255,131 +309,71 @@ const ActionButtons = memo(() => {
   );
 });
 
-const Calendar = memo(() => {
-  const daysOfWeek = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-  const currentMonth = 'SEPTEMBER';
-  
-  const firstDayOfMonth = 0;
-  const daysInMonth = 30;
-  
-  const calendarDays = [];
-  
-  for (let i = 0; i < firstDayOfMonth; i++) {
-    calendarDays.push(null);
-  }
-  
-  for (let i = 1; i <= daysInMonth; i++) {
-    calendarDays.push(i);
-  }
-
-  return (
-    <View className="px-6 mb-8">
-      <View className="items-center mb-6">
-        <Text style={[FontStyles.bodyMedium, {
-          color: '#A0A0A0',
-          fontWeight: '600',
-          textTransform: 'uppercase',
-          letterSpacing: 2,
-          fontSize: 16,
-        }]}>
-          {currentMonth}
-        </Text>
-      </View>
-
-      <View style={{
-        backgroundColor: '#F8F9FA',
-        borderRadius: 20,
-        padding: 24,
-      }}>
-        <View className="flex-row mb-4">
-          {daysOfWeek.map((day, index) => (
-            <View key={day} className="flex-1 items-center">
-              <Text style={[FontStyles.bodySmall, {
-                color: '#9CA3AF',
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                fontSize: 12,
-              }]}>
-                {day}
-              </Text>
-            </View>
-          ))}
-        </View>
-        
-        <View className="flex-row flex-wrap">
-          {calendarDays.map((date, index) => {
-            const isToday = date === 1;
-            return (
-              <View key={index} style={{ width: '14.28%' }} className="items-center mb-3">
-                {date && (
-                  <View style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 18,
-                    backgroundColor: isToday ? '#374151' : 'transparent',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                    <Text style={[FontStyles.bodyMedium, {
-                      color: isToday ? '#FFFFFF' : '#374151',
-                      fontWeight: '600',
-                      fontSize: 16,
-                    }]}>
-                      {date}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            );
-          })}
-        </View>
-      </View>
-    </View>
-  );
-});
-
-const HistorySection = memo(() => (
-  <View className="px-6 mb-8">
-    <Text style={[FontStyles.bodyMedium, {
-      color: '#9CA3AF',
-      fontWeight: '600',
-      textTransform: 'uppercase',
-      marginBottom: 16,
-      fontSize: 14,
-      letterSpacing: 1,
-      borderBottomWidth: 1,
-      borderBottomColor: '#E5E7EB',
-      paddingBottom: 8,
-      opacity: 0.8,
-    }]}>
-      MY HISTORY
-    </Text>
-
-    <View style={{
-      backgroundColor: '#FFFFFF',
-      borderRadius: 16,
-      padding: 24,
-      minHeight: 100,
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}>
-      <Text style={[FontStyles.bodyMedium, {
-        color: '#9CA3AF',
-        fontWeight: '500',
-        fontSize: 16,
-      }]}>
-        No routines to display
-      </Text>
-    </View>
-  </View>
-));
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<'stats' | 'history'>('stats');
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
+  const [monthlyProgress, setMonthlyProgress] = useState<{ [day: number]: boolean }>({});
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setIsLoading(true);
+
+        const stats = await getDashboardStats();
+        setDashboardStats(stats);
+
+        const history = await loadHistory();
+        setHistoryItems(history);
+
+        const currentDate = new Date();
+        const monthProgress = await getMonthlyProgress(
+          currentDate.getFullYear(),
+          currentDate.getMonth()
+        );
+        setMonthlyProgress(monthProgress);
+
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, []);
 
   const handleTabChange = useCallback((tab: 'stats' | 'history') => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setActiveTab(tab);
+  }, []);
+
+  const handleStreakRestored = useCallback(async () => {
+    try {
+      const stats = await getDashboardStats();
+      setDashboardStats(stats);
+    } catch (error) {
+      console.error('Error reloading dashboard stats:', error);
+    }
+  }, []);
+
+  const handleClearHistory = useCallback(async () => {
+    try {
+      await clearHistory();
+      const history = await loadHistory();
+      setHistoryItems(history);
+
+      const currentDate = new Date();
+      const monthProgress = await getMonthlyProgress(
+        currentDate.getFullYear(),
+        currentDate.getMonth()
+      );
+      setMonthlyProgress(monthProgress);
+    } catch (error) {
+      console.error('Error clearing history:', error);
+    }
   }, []);
 
   const renderContent = useMemo(() => {
@@ -387,23 +381,38 @@ const Dashboard = () => {
       return (
         <>
           <Bendometer />
-          <StatsSection />
-          <ActionButtons />
+          <StatsSection dashboardStats={dashboardStats} isLoading={isLoading} />
+          <ActionButtons dashboardStats={dashboardStats} onStreakRestored={handleStreakRestored} />
         </>
       );
     } else {
       return (
         <>
-          <Calendar />
-          <HistorySection />
+          <Calendar monthlyProgress={monthlyProgress} />
+
+          {historyItems.length > 0 && (
+            <View className="px-6 mb-4">
+              <TouchableOpacity
+                onPress={handleClearHistory}
+                className="bg-red-500 rounded-lg p-3"
+                activeOpacity={0.7}
+              >
+                <Text style={[FontStyles.bodyMedium, { color: 'white', textAlign: 'center', fontWeight: '600' }]}>
+                  🗑️ Clear Test History Data
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <HistoryList items={historyItems} maxItems={10} />
         </>
       );
     }
-  }, [activeTab]);
+  }, [activeTab, dashboardStats, isLoading, handleStreakRestored, monthlyProgress, historyItems, handleClearHistory]);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <StatusBar style="dark" />
+      <StatusBar />
       <Header />
       <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 

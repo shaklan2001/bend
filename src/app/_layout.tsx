@@ -22,6 +22,8 @@ export default function RootLayout() {
             <Stack.Screen name="intro" />
             <Stack.Screen name="(onboarding)" />
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="routine" />
+            <Stack.Screen name="streak" />
         </Stack>
     );
 }

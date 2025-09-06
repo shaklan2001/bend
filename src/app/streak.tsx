@@ -14,6 +14,7 @@ import { FontStyles } from '../lib/fonts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { getStreakScreenData, saveStreakData, loadStreakData } from '../lib/streakManager';
 
 interface StreakScreenProps {
     exercisesCount: number;
@@ -72,9 +73,11 @@ export default function StreakScreen() {
 
     const [currentStreak, setCurrentStreak] = useState(1);
     const [streakData, setStreakData] = useState<boolean[]>([]);
+    const [canRestore, setCanRestore] = useState(false);
+    const [streakRestoresAvailable, setStreakRestoresAvailable] = useState(0);
     const fadeAnim = useState(new Animated.Value(0))[0];
 
-    const days = ['We', 'Th', 'Fr', 'Sa', 'Su', 'Mo', 'Tu'];
+    const days = ['To', 'Ye', 'Fr', 'Th', 'We', 'Tu', 'Mo'];
 
     useEffect(() => {
         loadStreakData();
@@ -87,19 +90,17 @@ export default function StreakScreen() {
 
     const loadStreakData = useCallback(async () => {
         try {
-            const savedStreak = await AsyncStorage.getItem('streakData');
-            if (savedStreak) {
-                const parsedStreak = JSON.parse(savedStreak);
-                setStreakData(parsedStreak);
-                setCurrentStreak(parsedStreak.filter(Boolean).length);
-            } else {
-                const newStreakData = [true, false, false, false, false, false, false];
-                setStreakData(newStreakData);
-                setCurrentStreak(1);
-                await AsyncStorage.setItem('streakData', JSON.stringify(newStreakData));
-            }
+            const streakScreenData = await getStreakScreenData();
+            setCurrentStreak(streakScreenData.currentStreak);
+            setStreakData(streakScreenData.weeklyData);
+            setCanRestore(streakScreenData.canRestore);
+            setStreakRestoresAvailable(streakScreenData.streakRestoresAvailable);
         } catch (error) {
             console.error('Error loading streak data:', error);
+            setCurrentStreak(1);
+            setStreakData([true, false, false, false, false, false, false]);
+            setCanRestore(false);
+            setStreakRestoresAvailable(0);
         }
     }, []);
 
@@ -127,28 +128,14 @@ export default function StreakScreen() {
         }
     }, [routineName, exercisesCount, totalMinutes, routineSlug]);
 
-    const handleDone = useCallback(async () => {
+    const handleDone = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        try {
-            const updatedStreak = [...streakData];
-            updatedStreak[0] = true;
-            setStreakData(updatedStreak);
-            await AsyncStorage.setItem('streakData', JSON.stringify(updatedStreak));
-
-            closeWithAnimation(() => {
-                setTimeout(() => {
-                    router.replace('/(tabs)/(home)');
-                }, 100);
-            });
-        } catch (error) {
-            console.error('Error saving streak data:', error);
-            closeWithAnimation(() => {
-                setTimeout(() => {
-                    router.replace('/(tabs)/(home)');
-                }, 100);
-            });
-        }
-    }, [streakData, closeWithAnimation]);
+        closeWithAnimation(() => {
+            setTimeout(() => {
+                router.replace('/(tabs)/(home)');
+            }, 100);
+        });
+    }, [closeWithAnimation]);
 
     const handleClose = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -184,7 +171,7 @@ export default function StreakScreen() {
 
                 <View className="items-center my-8">
                     <Text style={streakScreenStyles.streakNumber}>
-                        {currentStreak} day
+                        {currentStreak} {currentStreak === 1 ? 'day' : 'days'}
                     </Text>
                     <Text style={streakScreenStyles.streakLabel}>
                         ACTIVE STREAK
@@ -205,7 +192,10 @@ export default function StreakScreen() {
                 <View className="bg-gray-50 rounded-lg p-4 mb-6">
                     <Text style={streakScreenStyles.tipText}>
                         <Text style={streakScreenStyles.tipLabel}>Tip: </Text>
-                        Unlock a Streak Restore by reaching a 2 day streak.
+                        {streakRestoresAvailable > 0
+                            ? `You have ${streakRestoresAvailable} Streak Restore${streakRestoresAvailable > 1 ? 's' : ''} available.`
+                            : 'Unlock a Streak Restore by reaching a 2 day streak.'
+                        }
                     </Text>
                 </View>
 

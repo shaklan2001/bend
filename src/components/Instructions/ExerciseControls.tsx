@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { Entypo } from '@expo/vector-icons';
+import { Entypo, FontAwesome } from '@expo/vector-icons';
 
 interface ExerciseControlsProps {
     isPaused: boolean;
@@ -112,11 +112,11 @@ export const ExerciseControls = memo(({
                 style={exerciseControlsStyles.button}
                 activeOpacity={0.7}
             >
-                <Entypo
+                {!isLastExercise ? <Entypo
                     name="controller-next"
                     size={30}
                     color="#000000"
-                />
+                /> : <FontAwesome name="check" size={30} color="#A69B8A" /> }
             </TouchableOpacity>
         </View>
     );

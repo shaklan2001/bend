@@ -22,6 +22,7 @@ import { ExerciseControls } from '@src/components/Instructions/ExerciseControls'
 import { ExerciseInfoModal } from '@src/components/Instructions/ExerciseInfoModal';
 import { SuccessModal } from '@src/components/Instructions/SuccessModal';
 import Header from '../UI/Header';
+import { shouldShowSuccessModal, completeToday } from '../../lib/streakManager';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const containerSize = screenWidth * 0.85;
@@ -233,6 +234,39 @@ export const ExerciseModal = memo(({
         }
     }, [currentExercise, startCountdown]);
 
+    const totalMinutes = useMemo(() => {
+        return Math.round(exercises.reduce((total, exercise) => total + exercise.duration_seconds, 0) / 60);
+    }, [exercises]);
+
+    const handleDirectToStreak = useCallback(async () => {
+        try {
+            await completeToday({
+                id: routineSlug || 'unknown',
+                name: routineName || 'Daily Routine',
+                duration: totalMinutes,
+                slug: routineSlug || '',
+                exercisesCount: exercises.length,
+                totalMinutes: totalMinutes,
+            });
+
+            router.replace({
+                pathname: '/streak',
+                params: {
+                    exercisesCount: exercises.length.toString(),
+                    totalMinutes: totalMinutes.toString(),
+                    routineName: routineName || 'Daily Routine',
+                    routineSlug: routineSlug || '',
+                }
+            });
+            setTimeout(() => {
+                onComplete();
+            }, 100);
+        } catch (error) {
+            console.error('Error completing routine:', error);
+            onComplete();
+        }
+    }, [exercises.length, totalMinutes, routineName, routineSlug, onComplete]);
+
     const pauseExercise = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         if (!isPaused) {
@@ -241,15 +275,20 @@ export const ExerciseModal = memo(({
         setIsPaused(!isPaused);
     }, [isPaused, elapsedTime]);
 
-    const nextExerciseAction = useCallback(() => {
+    const nextExerciseAction = useCallback(async () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         if (isLastExercise) {
-            setShowSuccessModal(true);
+            const showSuccess = await shouldShowSuccessModal();
+            if (showSuccess) {
+                setShowSuccessModal(true);
+            } else {
+                await handleDirectToStreak();
+            }
         } else {
             setCurrentIndex(prev => prev + 1);
             setShowNextPreview(false);
         }
-    }, [isLastExercise]);
+    }, [isLastExercise, handleDirectToStreak]);
 
     const previousExerciseAction = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -269,17 +308,13 @@ export const ExerciseModal = memo(({
     }, []);
 
     const handlePauseTimer = useCallback(() => {
-        console.log('handlePauseTimer');
         if (!isPaused) {
-            console.log('handlePauseTimer true');
             setIsPaused(true);
         }
     }, [isPaused]);
 
     const handleResumeTimer = useCallback(() => {
-        console.log('handleResumeTimer');
         if (isPaused) {
-            console.log('handleResumeTimer true');
             setIsPaused(false);
         }
     }, [isPaused]);
@@ -288,14 +323,24 @@ export const ExerciseModal = memo(({
         setShowSuccessModal(false);
     }, []);
 
-    const handleAddToStreak = useCallback(() => {
-        setShowSuccessModal(false);
-        onComplete();
-    }, [onComplete]);
-
-    const totalMinutes = useMemo(() => {
-        return Math.round(exercises.reduce((total, exercise) => total + exercise.duration_seconds, 0) / 60);
-    }, [exercises]);
+    const handleAddToStreak = useCallback(async () => {
+        try {
+            await completeToday({
+                id: routineSlug || 'unknown',
+                name: routineName || 'Daily Routine',
+                duration: totalMinutes,
+                slug: routineSlug || '',
+                exercisesCount: exercises.length,
+                totalMinutes: totalMinutes,
+            });
+            setShowSuccessModal(false);
+            onComplete();
+        } catch (error) {
+            console.error('Error completing routine:', error);
+            setShowSuccessModal(false);
+            onComplete();
+        }
+    }, [exercises.length, totalMinutes, routineName, routineSlug, onComplete]);
 
     useEffect(() => {
         if (!visible || !currentExercise || isPaused || showCountdown) return;
@@ -319,9 +364,14 @@ export const ExerciseModal = memo(({
 
             if (remaining <= 0) {
                 clearInterval(timer);
-                setTimeout(() => {
+                setTimeout(async () => {
                     if (isLastExercise) {
-                        setShowSuccessModal(true);
+                        const showSuccess = await shouldShowSuccessModal();
+                        if (showSuccess) {
+                            setShowSuccessModal(true);
+                        } else {
+                            await handleDirectToStreak();
+                        }
                     } else {
                         setCurrentIndex(prevIndex => prevIndex + 1);
                         setShowNextPreview(false);
@@ -331,7 +381,7 @@ export const ExerciseModal = memo(({
         }, 100);
 
         return () => clearInterval(timer);
-    }, [visible, currentExercise, isPaused, showCountdown, nextExercise, isLastExercise, onComplete, pausedTime]);
+    }, [visible, currentExercise, isPaused, showCountdown, nextExercise, isLastExercise, onComplete, pausedTime, handleDirectToStreak]);
 
     useEffect(() => {
         if (visible) {

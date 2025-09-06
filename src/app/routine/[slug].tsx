@@ -349,12 +349,9 @@ const RoutineDetail = () => {
     }, []);
 
     const handleCompleteRoutine = useCallback(() => {
-        setTimeout(() => {
-            router.push('/routine');
-        }, 100);
         setShowExerciseModal(false);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }, [router]);
+    }, []);
 
     const handleShareRoutine = useCallback(async () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
