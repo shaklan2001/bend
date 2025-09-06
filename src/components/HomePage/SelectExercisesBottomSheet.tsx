@@ -333,7 +333,6 @@ const SelectExercisesBottomSheet: React.FC<SelectExercisesBottomSheetProps> = me
         });
     }, [onClose, slideAnim, fadeAnim]);
 
-    // Handle next button
     const handleNext = useCallback(() => {
         if (selectedExercises.length === 0) return;
 
@@ -344,7 +343,6 @@ const SelectExercisesBottomSheet: React.FC<SelectExercisesBottomSheetProps> = me
         handleClose();
     }, [selectedExercises, onExercisesSelected, handleClose]);
 
-    // Animation effects
     useEffect(() => {
         if (visible && !isClosing) {
             fetchExercises();

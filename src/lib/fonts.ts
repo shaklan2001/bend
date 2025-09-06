@@ -16,7 +16,6 @@ export const Fonts = {
     medium: 'Metropolis-Medium',
     mediumItalic: 'Metropolis-MediumItalic',
 
-
     semiBold: 'Metropolis-SemiBold',
     semiBoldItalic: 'Metropolis-SemiBoldItalic',
 

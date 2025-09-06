@@ -14,11 +14,13 @@ import { StatusBar } from 'expo-status-bar';
 import { Entypo } from '@expo/vector-icons';
 import { FontStyles } from '../../lib/fonts';
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { TimerCircle } from '@src/components/Instructions/TimerCircle';
 import { CountdownOverlay } from '@src/components/Instructions/CountdownOverlay';
 import { NextExercisePreview } from '@src/components/Instructions/NextExercisePreview';
 import { ExerciseControls } from '@src/components/Instructions/ExerciseControls';
 import { ExerciseInfoModal } from '@src/components/Instructions/ExerciseInfoModal';
+import { SuccessModal } from '@src/components/Instructions/SuccessModal';
 import Header from '../UI/Header';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -48,6 +50,8 @@ interface ExerciseModalProps {
     exercises: RoutineExercise[];
     onClose: () => void;
     onComplete: () => void;
+    routineName?: string;
+    routineSlug?: string;
 }
 
 const ExerciseImage = memo(({
@@ -57,7 +61,7 @@ const ExerciseImage = memo(({
 }: {
     exercise: Exercise;
     showCountdown: boolean;
-    countdownValue: number;
+    countdownValue: number | string;
 }) => {
     return (
         <View
@@ -155,7 +159,9 @@ export const ExerciseModal = memo(({
     visible,
     exercises,
     onClose,
-    onComplete
+    onComplete,
+    routineName,
+    routineSlug
 }: ExerciseModalProps) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [remainingTime, setRemainingTime] = useState(0);
@@ -164,6 +170,7 @@ export const ExerciseModal = memo(({
     const [countdownValue, setCountdownValue] = useState<number | string>(3);
     const [showNextPreview, setShowNextPreview] = useState(false);
     const [showInfoModal, setShowInfoModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [pausedTime, setPausedTime] = useState(0);
 
     const currentExercise = useMemo(() =>
@@ -237,12 +244,12 @@ export const ExerciseModal = memo(({
     const nextExerciseAction = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         if (isLastExercise) {
-            onComplete();
+            setShowSuccessModal(true);
         } else {
             setCurrentIndex(prev => prev + 1);
             setShowNextPreview(false);
         }
-    }, [isLastExercise, onComplete]);
+    }, [isLastExercise]);
 
     const previousExerciseAction = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -277,6 +284,19 @@ export const ExerciseModal = memo(({
         }
     }, [isPaused]);
 
+    const handleSuccessModalClose = useCallback(() => {
+        setShowSuccessModal(false);
+    }, []);
+
+    const handleAddToStreak = useCallback(() => {
+        setShowSuccessModal(false);
+        onComplete();
+    }, [onComplete]);
+
+    const totalMinutes = useMemo(() => {
+        return Math.round(exercises.reduce((total, exercise) => total + exercise.duration_seconds, 0) / 60);
+    }, [exercises]);
+
     useEffect(() => {
         if (!visible || !currentExercise || isPaused || showCountdown) return;
 
@@ -301,7 +321,7 @@ export const ExerciseModal = memo(({
                 clearInterval(timer);
                 setTimeout(() => {
                     if (isLastExercise) {
-                        onComplete();
+                        setShowSuccessModal(true);
                     } else {
                         setCurrentIndex(prevIndex => prevIndex + 1);
                         setShowNextPreview(false);
@@ -323,6 +343,7 @@ export const ExerciseModal = memo(({
             setShowNextPreview(false);
             setElapsedTime(0);
             setShowInfoModal(false);
+            setShowSuccessModal(false);
             setPausedTime(0);
         }
     }, [visible]);
@@ -396,6 +417,17 @@ export const ExerciseModal = memo(({
                 exercise={currentExercise?.exercise || null}
                 onClose={handleCloseInfoModal}
                 onPauseTimer={handlePauseTimer}
+            />}
+
+            {showSuccessModal && <SuccessModal
+                visible={showSuccessModal}
+                onClose={handleSuccessModalClose}
+                onAddToStreak={handleAddToStreak}
+                exercisesCount={exercises.length}
+                totalMinutes={totalMinutes}
+                daysCompleted={1}
+                routineName={routineName}
+                routineSlug={routineSlug}
             />}
         </Modal>
     );

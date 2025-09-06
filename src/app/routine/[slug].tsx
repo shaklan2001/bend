@@ -349,9 +349,12 @@ const RoutineDetail = () => {
     }, []);
 
     const handleCompleteRoutine = useCallback(() => {
+        setTimeout(() => {
+            router.push('/routine');
+        }, 100);
         setShowExerciseModal(false);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }, []);
+    }, [router]);
 
     const handleShareRoutine = useCallback(async () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -467,12 +470,14 @@ const RoutineDetail = () => {
             </ScrollView>
             <ActionButtons onShare={handleShareRoutine} onStart={handleStartRoutine} />
 
-            <ExerciseModal
+            {showExerciseModal && <ExerciseModal
                 visible={showExerciseModal}
                 exercises={exercises}
                 onClose={handleCloseExerciseModal}
                 onComplete={handleCompleteRoutine}
-            />
+                routineName={routine?.name}
+                routineSlug={routine?.slug}
+            />}
         </SafeAreaView>
     );
 };
