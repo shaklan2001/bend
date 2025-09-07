@@ -6,14 +6,12 @@ class AuthManager {
   private dispatch: AppDispatch | null = null;
   private unsubscribe: (() => void) | null = null;
 
-  // Initialize the auth manager with Redux dispatch
   init(dispatch: AppDispatch) {
     this.dispatch = dispatch;
     this.setupAuthListener();
     this.checkInitialAuth();
   }
 
-  // Clean up subscriptions
   cleanup() {
     if (this.unsubscribe) {
       this.unsubscribe();
@@ -21,7 +19,6 @@ class AuthManager {
     }
   }
 
-  // Set up Supabase auth state listener
   private setupAuthListener() {
     if (!this.dispatch) return;
 
@@ -33,7 +30,6 @@ class AuthManager {
     }).data.subscription.unsubscribe;
   }
 
-  // Check initial authentication state
   private async checkInitialAuth() {
     if (!this.dispatch) return;
 
@@ -50,6 +46,5 @@ class AuthManager {
   }
 }
 
-// Export singleton instance
 export const authManager = new AuthManager();
 export default authManager;

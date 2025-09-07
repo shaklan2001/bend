@@ -1,3 +1,6 @@
+import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   KeyboardAvoidingView,
@@ -9,13 +12,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import Button from '../components/Button';
+import LogInSheet from '../components/Shared/LogInSheet';
 import { FontStyles } from '../lib/fonts';
 import { checkOnboardingStatus } from '../lib/supabase';
-import LogInSheet from '../components/Shared/LogInSheet';
 
 const CircleStep = memo(({ circleScale }: { circleScale: Animated.Value }) => (
   <View className='flex-1 justify-center items-center'>
@@ -27,7 +27,7 @@ const CircleStep = memo(({ circleScale }: { circleScale: Animated.Value }) => (
       className='w-32 h-32 rounded-full mr-8'
     />
   </View>
-));
+), () => true); 
 
 const LogoStep = memo(
   ({
@@ -62,7 +62,8 @@ const LogoStep = memo(
         </View>
       </View>
     </View>
-  )
+  ),
+  () => true 
 );
 
 const ReferralCodeModal = memo(
@@ -157,7 +158,10 @@ const ReferralCodeModal = memo(
         </SafeAreaView>
       </View>
     </Modal>
-  )
+  ),
+  (prevProps, nextProps) => 
+    prevProps.visible === nextProps.visible && 
+    prevProps.referralCode === nextProps.referralCode
 );
 
 export default function IntroScreen() {
@@ -225,60 +229,77 @@ export default function IntroScreen() {
     textOpacity.setValue(0);
     finalScreenOpacity.setValue(0);
 
-    setTimeout(() => {
-      setCurrentStep(1);
+    const firstTimeout = setTimeout(() => {
+      requestAnimationFrame(() => {
+        setCurrentStep(1);
+      });
     }, 500);
 
-    setTimeout(() => {
-      if (Platform.OS === 'ios') {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
-
-      Animated.parallel([
-        Animated.spring(circleScale, {
-          toValue: 0.75,
-          useNativeDriver: true,
-          tension: 30,
-          friction: 9,
-        }),
-        Animated.spring(circleMoveX, {
-          toValue: 0,
-          useNativeDriver: true,
-          tension: 30,
-          friction: 10,
-        }),
-        Animated.spring(textSlideX, {
-          toValue: 0,
-          useNativeDriver: true,
-          tension: 30,
-          friction: 9,
-        }),
-        Animated.timing(textOpacity, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setCurrentStep(2);
-
-        if (!onboardingCompleted) {
-          setTimeout(() => {
-            Animated.timing(finalScreenOpacity, {
-              toValue: 1,
-              duration: 800,
-              useNativeDriver: true,
-            }).start(() => {
-              setCurrentStep(3);
-            });
-          }, 1500);
-        } else {
-          setTimeout(() => {
-            router.push('/(tabs)');
-          }, 1000);
+    const secondTimeout = setTimeout(() => {
+      requestAnimationFrame(() => {
+        if (Platform.OS === 'ios') {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         }
+
+        Animated.parallel([
+          Animated.spring(circleScale, {
+            toValue: 0.75,
+            useNativeDriver: true,
+            tension: 30,
+            friction: 9,
+          }),
+          Animated.spring(circleMoveX, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 30,
+            friction: 10,
+          }),
+          Animated.spring(textSlideX, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 30,
+            friction: 9,
+          }),
+          Animated.timing(textOpacity, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          requestAnimationFrame(() => {
+            setCurrentStep(2);
+
+            if (!onboardingCompleted) {
+              const finalTimeout = setTimeout(() => {
+                Animated.timing(finalScreenOpacity, {
+                  toValue: 1,
+                  duration: 800,
+                  useNativeDriver: true,
+                }).start(() => {
+                  requestAnimationFrame(() => {
+                    setCurrentStep(3);
+                  });
+                });
+              }, 1500);
+
+              return () => clearTimeout(finalTimeout);
+            } else {
+              const routerTimeout = setTimeout(() => {
+                router.replace('/(tabs)');
+              }, 1000);
+
+              return () => clearTimeout(routerTimeout);
+            }
+          });
+        });
       });
     }, 1500);
-  }, [onboardingCompleted]);
+
+    return () => {
+      clearTimeout(firstTimeout);
+      clearTimeout(secondTimeout);
+    };
+  }, [onboardingCompleted, circleScale, circleMoveX, textSlideX, textOpacity, finalScreenOpacity, router]);
 
   return (
     <SafeAreaView className='flex-1 bg-white'>
