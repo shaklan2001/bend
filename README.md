@@ -12,6 +12,7 @@ A React Native application built with Expo SDK 53 and styled using NativeWind v4
 ## 📱 Screenshots
 
 The app includes:
+
 - Welcome screen with app branding
 - Feature showcase with icons and descriptions
 - Modern card-based UI design
@@ -20,6 +21,7 @@ The app includes:
 ## 🛠️ Setup & Installation
 
 ### Prerequisites
+
 - Node.js (v18 or higher)
 - npm or yarn
 - Expo CLI
@@ -29,28 +31,32 @@ The app includes:
 ### Installation Steps
 
 1. **Clone and navigate to the project:**
+
    ```bash
    cd BendApp
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Start the development server:**
+
    ```bash
    npm start
    ```
 
 4. **Run on your preferred platform:**
+
    ```bash
    # iOS
    npm run ios
-   
+
    # Android
    npm run android
-   
+
    # Web
    npm run web
    ```
@@ -60,25 +66,25 @@ The app includes:
 This project demonstrates NativeWind v4 capabilities:
 
 ### Basic Styling
+
 ```tsx
-<View className="flex-1 bg-white items-center justify-center">
-  <Text className="text-xl text-gray-800 font-semibold">
-    Hello NativeWind!
-  </Text>
+<View className='flex-1 bg-white items-center justify-center'>
+  <Text className='text-xl text-gray-800 font-semibold'>Hello NativeWind!</Text>
 </View>
 ```
 
 ### Responsive Design
+
 ```tsx
-<View className="px-4 py-6 bg-blue-50 rounded-xl">
-  <Text className="text-center text-blue-800">
-    Responsive content
-  </Text>
+<View className='px-4 py-6 bg-blue-50 rounded-xl'>
+  <Text className='text-center text-blue-800'>Responsive content</Text>
 </View>
 ```
 
 ### Component Styling
+
 The `WelcomeCard` component showcases:
+
 - Card layouts with shadows
 - Icon integration
 - Typography hierarchy
@@ -101,11 +107,13 @@ BendApp/
 ## 🔧 Configuration Files
 
 ### Tailwind Config (`tailwind.config.js`)
+
 - Content paths for React Native components
 - Extensible theme configuration
 - Plugin support
 
 ### TypeScript Config (`tsconfig.json`)
+
 - Extends Expo base configuration
 - Strict type checking enabled
 - NativeWind type support
@@ -135,6 +143,7 @@ BendApp/
 ## 🤝 Contributing
 
 Feel free to contribute to this project by:
+
 - Adding new components
 - Improving existing styles
 - Enhancing the UI/UX

@@ -1,7 +1,6 @@
 import React from 'react';
-import { Keyboard, Animated, Platform } from 'react-native';
+import { Animated, Keyboard, Platform } from 'react-native';
 import { UI_DIMENSIONS } from '@src/lib/constant';
-
 
 interface GravityProps {
   children: React.ReactNode;
@@ -21,7 +20,7 @@ class Gravity extends React.PureComponent<GravityProps, GravityState> {
     super(props);
     this.state = {
       keyboardCursor: new Animated.Value(Platform.OS === 'ios' ? -32 : -12),
-      zIndex: props.bringOnTop ? 50 : undefined
+      zIndex: props.bringOnTop ? 50 : undefined,
     };
   }
 
@@ -41,7 +40,7 @@ class Gravity extends React.PureComponent<GravityProps, GravityState> {
     Animated.timing(this.state.keyboardCursor, {
       useNativeDriver: true,
       toValue: -height,
-      duration
+      duration,
     }).start();
   };
 
@@ -50,7 +49,7 @@ class Gravity extends React.PureComponent<GravityProps, GravityState> {
     Animated.timing(this.state.keyboardCursor, {
       useNativeDriver: true,
       toValue: Platform.OS === 'ios' ? -32 : -12,
-      duration
+      duration,
     }).start();
   };
 
@@ -65,7 +64,7 @@ class Gravity extends React.PureComponent<GravityProps, GravityState> {
           right: 0,
           zIndex: this.state.zIndex,
           paddingHorizontal: UI_DIMENSIONS.PAGE_HORIZONTAL_PADDING_FOR_MOBILE,
-          paddingBottom: 6
+          paddingBottom: 6,
         }}
       >
         {this.props.children}

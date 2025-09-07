@@ -1,35 +1,24 @@
-import React, { memo, useCallback, useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  SafeAreaView,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+import React, { memo, useCallback, useEffect, useState } from 'react';
+import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { FontStyles } from '../../../lib/fonts';
 import * as Haptics from 'expo-haptics';
 import CustomModal from '@src/components/CustomeRoute/CustomModal';
 import CoverPreviewCard from '@src/components/Shared/CoverPreviewCard';
-import { getCustomRoutines, CustomRoutine, clearAllCustomRoutines } from '../../../lib/customRoutines';
+import {
+  clearAllCustomRoutines,
+  CustomRoutine,
+  getCustomRoutines,
+} from '../../../lib/customRoutines';
 
 const TriangularPatternIcon = memo(() => (
-  <View className="items-center mb-6">
-    <View
-      className="w-8 h-8 rounded-full mb-3"
-      style={{ backgroundColor: '#A69B8A3A' }}
-    />
+  <View className='items-center mb-6'>
+    <View className='w-8 h-8 rounded-full mb-3' style={{ backgroundColor: '#A69B8A3A' }} />
 
-    <View className="flex-row space-x-6 gap-4">
-      <View
-        className="w-8 h-8 rounded-full"
-        style={{ backgroundColor: '#A69B8A3A' }}
-      />
-      <View
-        className="w-8 h-8 rounded-full"
-        style={{ backgroundColor: '#A69B8A3A' }}
-      />
+    <View className='flex-row space-x-6 gap-4'>
+      <View className='w-8 h-8 rounded-full' style={{ backgroundColor: '#A69B8A3A' }} />
+      <View className='w-8 h-8 rounded-full' style={{ backgroundColor: '#A69B8A3A' }} />
     </View>
   </View>
 ));
@@ -43,7 +32,7 @@ const CreateRoutineCard = memo(({ onPress }: { onPress: () => void }) => {
   return (
     <TouchableOpacity
       onPress={handlePress}
-      className="mx-8 px-4 py-4 items-center mt-8"
+      className='mx-8 px-4 py-4 items-center mt-8'
       style={{
         backgroundColor: '#F9FAFB',
         borderRadius: 50,
@@ -58,23 +47,33 @@ const CreateRoutineCard = memo(({ onPress }: { onPress: () => void }) => {
       activeOpacity={0.8}
     >
       <TriangularPatternIcon />
-      <Text style={[FontStyles.heading2, {
-        color: '#374151',
-        fontWeight: '700',
-        textAlign: 'center',
-        marginBottom: 8,
-      }]}>
+      <Text
+        style={[
+          FontStyles.heading2,
+          {
+            color: '#374151',
+            fontWeight: '700',
+            textAlign: 'center',
+            marginBottom: 8,
+          },
+        ]}
+      >
         Create Your Own Routine
       </Text>
 
-      <Text style={[FontStyles.bodyMedium, {
-        color: '#6B7280',
-        fontWeight: '700',
-        textAlign: 'center',
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
-        opacity: 0.7,
-      }]}>
+      <Text
+        style={[
+          FontStyles.bodyMedium,
+          {
+            color: '#6B7280',
+            fontWeight: '700',
+            textAlign: 'center',
+            textTransform: 'uppercase',
+            letterSpacing: 0.5,
+            opacity: 0.7,
+          },
+        ]}
+      >
         TAP TO START
       </Text>
     </TouchableOpacity>
@@ -82,11 +81,16 @@ const CreateRoutineCard = memo(({ onPress }: { onPress: () => void }) => {
 });
 
 const Header = memo(() => (
-  <View className="flex-row items-center justify-center px-6 py-4 border-b border-gray-100">
-    <Text style={[FontStyles.heading1, {
-      color: '#000000',
-      fontWeight: '700',
-    }]}>
+  <View className='flex-row items-center justify-center px-6 py-4 border-b border-gray-100'>
+    <Text
+      style={[
+        FontStyles.heading1,
+        {
+          color: '#000000',
+          fontWeight: '700',
+        },
+      ]}
+    >
       Custom
     </Text>
   </View>
@@ -113,20 +117,22 @@ const MyRoutinesSection = memo(({ routines }: { routines: CustomRoutine[] }) => 
   if (routines.length === 0) return null;
 
   return (
-    <View className="mt-8">
-      <Text style={{
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#6B7280',
-        textAlign: 'center',
-        marginBottom: 20,
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
-      }}>
+    <View className='mt-8'>
+      <Text
+        style={{
+          fontSize: 16,
+          fontWeight: '700',
+          color: '#6B7280',
+          textAlign: 'center',
+          marginBottom: 20,
+          textTransform: 'uppercase',
+          letterSpacing: 0.5,
+        }}
+      >
         MY ROUTINES
       </Text>
 
-      {routines.map((routine) => (
+      {routines.map(routine => (
         <SavedRoutineCard key={routine.id} routine={routine} />
       ))}
     </View>
@@ -177,10 +183,10 @@ const CustomRoutineScreen = () => {
   }, [isBottomSheetVisible, loadCustomRoutines]);
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <StatusBar style="dark" />
+    <SafeAreaView className='flex-1 bg-white'>
+      <StatusBar style='dark' />
       <Header />
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
         <CreateRoutineCard onPress={handleCreateRoutine} />
 
         {customRoutines.length > 0 && (
@@ -197,11 +203,13 @@ const CustomRoutineScreen = () => {
             }}
             activeOpacity={0.7}
           >
-            <Text style={{
-              color: '#FFFFFF',
-              fontWeight: '600',
-              fontSize: 14,
-            }}>
+            <Text
+              style={{
+                color: '#FFFFFF',
+                fontWeight: '600',
+                fontSize: 14,
+              }}
+            >
               🗑️ Clear All Custom Routines (Testing)
             </Text>
           </TouchableOpacity>
@@ -210,10 +218,9 @@ const CustomRoutineScreen = () => {
         <MyRoutinesSection routines={customRoutines} />
       </ScrollView>
 
-      {isBottomSheetVisible && <CustomModal
-        visible={isBottomSheetVisible}
-        onClose={handleCloseBottomSheet}
-      />}
+      {isBottomSheetVisible && (
+        <CustomModal visible={isBottomSheetVisible} onClose={handleCloseBottomSheet} />
+      )}
     </SafeAreaView>
   );
 };

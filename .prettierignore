@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.expo/
+
+# Platform specific
+android/
+ios/
+
+# Config files
+*.config.js
+metro.config.js
+babel.config.js
+
+# Logs
+*.log
+
+# Environment
+.env*
+
+# Cache
+.eslintcache
+
+# Generated files
+coverage/
+*.tsbuildinfo
+
+# Package manager
+package-lock.json
+yarn.lock
