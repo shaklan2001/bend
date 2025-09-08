@@ -8,13 +8,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
-    Pressable,
-    SafeAreaView,
-    ScrollView,
-    Share,
-    Text,
-    TouchableOpacity,
-    View,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  Share,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { GradientButton, ShareButton } from '../../components/Button';
 import { getCustomRoutineBySlug } from '../../lib/customRoutines';

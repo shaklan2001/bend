@@ -2,15 +2,15 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    Keyboard,
-    Modal,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Animated,
+  Keyboard,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { FontStyles } from '../lib/fonts';
 
@@ -87,6 +87,7 @@ const RecommendedCard = memo(({ routine }: { routine: (typeof recommendedRoutine
 
 const SearchModal: React.FC<SearchModalProps> = ({ visible, onClose }) => {
   const [searchText, setSearchText] = useState('');
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 

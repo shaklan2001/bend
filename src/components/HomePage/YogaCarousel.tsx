@@ -2,13 +2,13 @@ import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { memo, useCallback, useRef } from 'react';
 import {
-    Animated,
-    Dimensions,
-    Image,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Dimensions,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');

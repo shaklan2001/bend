@@ -10,14 +10,14 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
-    Dimensions,
-    Image,
-    Modal,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  Image,
+  Modal,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { FontStyles } from '../../lib/fonts';
 import { completeToday, shouldShowSuccessModal } from '../../lib/streakManager';

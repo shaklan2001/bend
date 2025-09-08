@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Text, TouchableOpacity, TouchableOpacityProps } from 'react-native';
+import { ColorValue, Text, TouchableOpacity, TouchableOpacityProps } from 'react-native';
 
 interface ButtonProps extends TouchableOpacityProps {
   variant?: 'primary' | 'secondary' | 'outline';
@@ -80,7 +80,7 @@ export const GradientButton = React.memo(
         {...props}
       >
         <LinearGradient
-          colors={colors}
+          colors={colors as unknown as readonly [ColorValue, ColorValue, ...ColorValue[]]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={{

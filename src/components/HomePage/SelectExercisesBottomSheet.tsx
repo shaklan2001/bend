@@ -3,16 +3,16 @@ import Entypo from '@expo/vector-icons/Entypo';
 import * as Haptics from 'expo-haptics';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    Dimensions,
-    FlatList,
-    Image,
-    Modal,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Dimensions,
+  FlatList,
+  Image,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { FontStyles } from '../../lib/fonts';
 import { supabase } from '../../lib/supabase';

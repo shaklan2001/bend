@@ -3,13 +3,13 @@ import { StatusBar } from 'expo-status-bar';
 import LottieView from 'lottie-react-native';
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import {
-    Animated,
-    Modal,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Modal,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { FontStyles } from '../../lib/fonts';
 import { completeToday } from '../../lib/streakManager';

@@ -4,13 +4,13 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import {
-    Animated,
-    SafeAreaView,
-    Share,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  SafeAreaView,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { FontStyles } from '../lib/fonts';
 import { getStreakScreenData } from '../lib/streakManager';
