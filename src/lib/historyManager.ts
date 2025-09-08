@@ -5,10 +5,10 @@ import { supabase } from './supabase';
 export interface HistoryItem {
   id: string;
   name: string;
-  duration: number; // in minutes
+  duration: number;
   image_url?: string;
   slug: string;
-  completedAt: number; // timestamp
+  completedAt: number;
   exercisesCount?: number;
   totalMinutes?: number;
 }
@@ -25,6 +25,7 @@ export interface DatabaseHistoryItem {
   completed_at: string;
   completion_percentage: number;
   calories_burned: number;
+  image_url?: string | null;
 }
 
 export interface MonthlyProgress {
@@ -33,30 +34,25 @@ export interface MonthlyProgress {
 
 const HISTORY_STORAGE_KEY = 'bendapp_routine_history';
 
-/**
- * Convert HistoryItem to DatabaseHistoryItem format
- */
 function convertToDatabaseFormat(
   item: HistoryItem,
   userId: string
 ): Omit<DatabaseHistoryItem, 'id'> {
   return {
     user_id: userId,
-    routine_type: 'yoga', // Default type
+    routine_type: 'yoga',
     routine_id: item.id,
     routine_name: item.name,
     routine_slug: item.slug,
     duration_minutes: item.duration,
     exercises_count: item.exercisesCount || 0,
     completed_at: new Date(item.completedAt).toISOString(),
-    completion_percentage: 100, // Assume 100% completion for now
-    calories_burned: Math.round(item.duration * 3.5), // Rough estimate: 3.5 calories per minute
+    completion_percentage: 100,
+    calories_burned: Math.round(item.duration * 3.5),
+    image_url: item.image_url || null,
   };
 }
 
-/**
- * Convert DatabaseHistoryItem to HistoryItem format
- */
 function convertFromDatabaseFormat(item: DatabaseHistoryItem): HistoryItem {
   return {
     id: item.routine_id,
@@ -66,12 +62,10 @@ function convertFromDatabaseFormat(item: DatabaseHistoryItem): HistoryItem {
     completedAt: new Date(item.completed_at).getTime(),
     exercisesCount: item.exercises_count,
     totalMinutes: item.duration_minutes,
+    image_url: item.image_url,
   };
 }
 
-/**
- * Save history item to database
- */
 async function saveToDatabase(item: HistoryItem): Promise<boolean> {
   try {
     const user = authService.getCurrentUserFromState();
@@ -96,9 +90,6 @@ async function saveToDatabase(item: HistoryItem): Promise<boolean> {
   }
 }
 
-/**
- * Load history from database
- */
 async function loadFromDatabase(): Promise<HistoryItem[]> {
   try {
     const user = authService.getCurrentUserFromState();
@@ -125,9 +116,6 @@ async function loadFromDatabase(): Promise<HistoryItem[]> {
   }
 }
 
-/**
- * Sync local history to database (for when user logs in)
- */
 export async function syncLocalHistoryToDatabase(): Promise<boolean> {
   try {
     const user = authService.getCurrentUserFromState();
@@ -136,16 +124,25 @@ export async function syncLocalHistoryToDatabase(): Promise<boolean> {
       return false;
     }
 
-    const localHistory = await loadHistory();
+    const localHistory = await loadLocalHistory();
     if (localHistory.length === 0) {
       console.log('No local history to sync');
       return true;
     }
 
-    // Convert local history to database format
+    const { data: existingHistory } = await supabase
+      .from('user_history')
+      .select('routine_id, completed_at')
+      .eq('user_id', user.id)
+      .limit(1);
+
+    if (existingHistory && existingHistory.length > 0) {
+      console.log('User already has history in database, skipping sync');
+      return true;
+    }
+
     const dbItems = localHistory.map(item => convertToDatabaseFormat(item, user.id));
 
-    // Insert all items to database
     const { error } = await supabase.from('user_history').insert(dbItems);
 
     if (error) {
@@ -161,28 +158,20 @@ export async function syncLocalHistoryToDatabase(): Promise<boolean> {
   }
 }
 
-/**
- * Get current date in YYYY-MM-DD format
- */
 function getTodayString(): string {
   return new Date().toISOString().split('T')[0];
 }
 
-/**
- * Load history from AsyncStorage and/or database
- */
 export async function loadHistory(): Promise<HistoryItem[]> {
   try {
     const user = authService.getCurrentUserFromState();
 
     if (user) {
-      // User is logged in, load from database
       const dbHistory = await loadFromDatabase();
       if (dbHistory.length > 0) {
         return dbHistory;
       }
 
-      // If no database history, try to sync local history to database
       const localHistory = await loadLocalHistory();
       if (localHistory.length > 0) {
         await syncLocalHistoryToDatabase();
@@ -191,7 +180,6 @@ export async function loadHistory(): Promise<HistoryItem[]> {
 
       return [];
     } else {
-      // User not logged in, load from local storage
       return await loadLocalHistory();
     }
   } catch (error) {
@@ -200,15 +188,12 @@ export async function loadHistory(): Promise<HistoryItem[]> {
   }
 }
 
-/**
- * Load history from AsyncStorage only
- */
 async function loadLocalHistory(): Promise<HistoryItem[]> {
   try {
     const savedHistory = await AsyncStorage.getItem(HISTORY_STORAGE_KEY);
     if (savedHistory) {
       const parsedHistory: HistoryItem[] = JSON.parse(savedHistory);
-      return parsedHistory.sort((a, b) => b.completedAt - a.completedAt); // Most recent first
+      return parsedHistory.sort((a, b) => b.completedAt - a.completedAt);
     }
     return [];
   } catch (error) {
@@ -217,9 +202,6 @@ async function loadLocalHistory(): Promise<HistoryItem[]> {
   }
 }
 
-/**
- * Save history to AsyncStorage
- */
 export async function saveHistory(history: HistoryItem[]): Promise<boolean> {
   try {
     await AsyncStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
@@ -230,9 +212,6 @@ export async function saveHistory(history: HistoryItem[]): Promise<boolean> {
   }
 }
 
-/**
- * Add a routine completion to history
- */
 export async function addToHistory(routine: {
   id: string;
   name: string;
@@ -254,24 +233,20 @@ export async function addToHistory(routine: {
       totalMinutes: routine.totalMinutes,
     };
 
-    // Save to database if user is logged in
     const user = authService.getCurrentUserFromState();
     if (user) {
       const dbSuccess = await saveToDatabase(historyItem);
       if (dbSuccess) {
-        console.log('✅ History saved to database');
         return true;
       }
     }
 
-    // Also save to local storage (for offline support and non-logged-in users)
     const currentHistory = await loadLocalHistory();
     const updatedHistory = [historyItem, ...currentHistory];
     const limitedHistory = updatedHistory.slice(0, 100);
 
     const localSuccess = await saveHistory(limitedHistory);
     if (localSuccess) {
-      console.log('✅ History saved to local storage');
       return true;
     }
 
@@ -282,9 +257,6 @@ export async function addToHistory(routine: {
   }
 }
 
-/**
- * Get history grouped by date
- */
 export async function getGroupedHistory(): Promise<{ [date: string]: HistoryItem[] }> {
   const history = await loadHistory();
   const grouped: { [date: string]: HistoryItem[] } = {};
@@ -300,20 +272,15 @@ export async function getGroupedHistory(): Promise<{ [date: string]: HistoryItem
   return grouped;
 }
 
-/**
- * Get monthly progress for calendar
- */
 export async function getMonthlyProgress(year: number, month: number): Promise<MonthlyProgress> {
   const history = await loadHistory();
   const monthlyProgress: MonthlyProgress = {};
 
-  // Filter history for the specific month
   const filteredHistory = history.filter(item => {
     const date = new Date(item.completedAt);
     return date.getFullYear() === year && date.getMonth() === month;
   });
 
-  // Group by day
   filteredHistory.forEach(item => {
     const day = new Date(item.completedAt).getDate();
     monthlyProgress[day] = true;
@@ -322,9 +289,6 @@ export async function getMonthlyProgress(year: number, month: number): Promise<M
   return monthlyProgress;
 }
 
-/**
- * Get recent history (last 30 days)
- */
 export async function getRecentHistory(limit: number = 10): Promise<HistoryItem[]> {
   const history = await loadHistory();
   const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
@@ -332,9 +296,6 @@ export async function getRecentHistory(limit: number = 10): Promise<HistoryItem[
   return history.filter(item => item.completedAt > thirtyDaysAgo).slice(0, limit);
 }
 
-/**
- * Get history for today
- */
 export async function getTodayHistory(): Promise<HistoryItem[]> {
   const history = await loadHistory();
   const today = getTodayString();
@@ -345,9 +306,6 @@ export async function getTodayHistory(): Promise<HistoryItem[]> {
   });
 }
 
-/**
- * Clear all history (for testing or reset purposes)
- */
 export async function clearHistory(): Promise<void> {
   try {
     await AsyncStorage.removeItem(HISTORY_STORAGE_KEY);
@@ -357,9 +315,6 @@ export async function clearHistory(): Promise<void> {
   }
 }
 
-/**
- * Format completion time relative to now
- */
 export function formatCompletionTime(timestamp: number): string {
   const now = Date.now();
   const diff = now - timestamp;

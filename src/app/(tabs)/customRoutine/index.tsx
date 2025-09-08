@@ -7,7 +7,6 @@ import * as Haptics from 'expo-haptics';
 import CustomModal from '@src/components/CustomeRoute/CustomModal';
 import CoverPreviewCard from '@src/components/Shared/CoverPreviewCard';
 import {
-  clearAllCustomRoutines,
   CustomRoutine,
   getCustomRoutines,
 } from '../../../lib/customRoutines';
@@ -160,18 +159,6 @@ const CustomRoutineScreen = () => {
     }
   }, []);
 
-  const handleClearAllRoutines = useCallback(async () => {
-    try {
-      const success = await clearAllCustomRoutines();
-      if (success) {
-        setCustomRoutines([]);
-        console.log('All custom routines cleared successfully');
-      }
-    } catch (error) {
-      console.error('Error clearing custom routines:', error);
-    }
-  }, []);
-
   useEffect(() => {
     loadCustomRoutines();
   }, [loadCustomRoutines]);
@@ -188,33 +175,6 @@ const CustomRoutineScreen = () => {
       <Header />
       <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
         <CreateRoutineCard onPress={handleCreateRoutine} />
-
-        {customRoutines.length > 0 && (
-          <TouchableOpacity
-            onPress={handleClearAllRoutines}
-            style={{
-              marginHorizontal: 32,
-              marginTop: 16,
-              paddingVertical: 12,
-              paddingHorizontal: 24,
-              backgroundColor: '#EF4444',
-              borderRadius: 8,
-              alignItems: 'center',
-            }}
-            activeOpacity={0.7}
-          >
-            <Text
-              style={{
-                color: '#FFFFFF',
-                fontWeight: '600',
-                fontSize: 14,
-              }}
-            >
-              🗑️ Clear All Custom Routines (Testing)
-            </Text>
-          </TouchableOpacity>
-        )}
-
         <MyRoutinesSection routines={customRoutines} />
       </ScrollView>
 

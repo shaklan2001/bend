@@ -168,7 +168,6 @@ class AuthService {
         return null;
       }
 
-      // Get the user profile from the profiles table
       const profile = await this.getProfile(user.id);
 
       return (

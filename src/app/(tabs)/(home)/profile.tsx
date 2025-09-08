@@ -8,6 +8,7 @@ import ActionButton from '../../../components/ActionButton';
 import CreateAccountSheet from '../../../components/Shared/CreateAccountSheet';
 import LogInSheet from '../../../components/Shared/LogInSheet';
 import { useAuth } from '../../../hooks/useAuth';
+import { syncLocalCustomRoutinesToDatabase } from '../../../lib/customRoutineManager';
 import { syncLocalFavoritesToDatabase } from '../../../lib/favoriteManager';
 import { FontStyles } from '../../../lib/fonts';
 import { syncLocalHistoryToDatabase } from '../../../lib/historyManager';
@@ -147,11 +148,12 @@ const ProfileScreen = () => {
     try {
       const historySyncSuccess = await syncLocalHistoryToDatabase();
       const favoritesSyncSuccess = await syncLocalFavoritesToDatabase();
+      const customRoutinesSyncSuccess = await syncLocalCustomRoutinesToDatabase();
 
-      if (historySyncSuccess || favoritesSyncSuccess) {
+      if (historySyncSuccess || favoritesSyncSuccess || customRoutinesSyncSuccess) {
         Alert.alert(
           'Welcome!',
-          'Your local exercise history and favorites have been synced to your account.',
+          'Your local exercise history, favorites, and custom routines have been synced to your account.',
           [{ text: 'OK' }]
         );
       }
