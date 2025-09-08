@@ -1,4 +1,7 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Entypo from '@expo/vector-icons/Entypo';
+import * as Haptics from 'expo-haptics';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -11,10 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
-import Entypo from '@expo/vector-icons/Entypo';
 import { FontStyles } from '../../lib/fonts';
 import { supabase } from '../../lib/supabase';
 import { GradientButton } from '../Button';
@@ -303,7 +302,6 @@ const EmptyState = memo(() => (
 
 const SelectExercisesBottomSheet: React.FC<SelectExercisesBottomSheetProps> = memo(
   ({ visible, onClose, onExercisesSelected }) => {
-    const router = useRouter();
     const slideAnim = useRef(new Animated.Value(screenHeight)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const [isClosing, setIsClosing] = useState(false);

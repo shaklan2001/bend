@@ -127,7 +127,6 @@ const CreateAccountSheet: React.FC<CreateAccountSheetProps> = ({
   }, [visible]);
 
   const handleContinue = useCallback(async () => {
-    // Validation
     if (!firstName.trim()) {
       Alert.alert('Error', 'Please enter your first name');
       return;
@@ -179,7 +178,6 @@ const CreateAccountSheet: React.FC<CreateAccountSheetProps> = ({
                 setConfirmEmail('');
                 setPassword('');
 
-                // Call success callback if provided
                 if (onSuccess) {
                   onSuccess();
                 } else {

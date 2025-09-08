@@ -1,4 +1,8 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { NextButton } from '@src/components/Shared/NextButton';
+import * as Haptics from 'expo-haptics';
+import { StatusBar } from 'expo-status-bar';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -10,16 +14,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
 import { FontStyles } from '../../lib/fonts';
 import { supabase } from '../../lib/supabase';
-import { NextButton } from '@src/components/Shared/NextButton';
 import Gravity from '../UI/Gravity';
-import DurationModal from './DurationModal';
 import Header from '../UI/Header';
+import DurationModal from './DurationModal';
 const { height: screenHeight } = Dimensions.get('window');
 
 interface Exercise {

@@ -1,3 +1,5 @@
+import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 import React, { memo, useCallback, useRef } from 'react';
 import {
   Animated,
@@ -8,8 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
 
 const { width: screenWidth } = Dimensions.get('window');
 const CARD_WIDTH = 280;
@@ -31,7 +31,7 @@ const YogaCarouselCard = memo(
     data,
     index,
     scrollX,
-    isFocused,
+    isFocused: _isFocused,
   }: {
     data: { time: string; title: string; slug: string };
     index: number;

@@ -1,6 +1,15 @@
+import { Entypo } from '@expo/vector-icons';
+import { CountdownOverlay } from '@src/components/Instructions/CountdownOverlay';
+import { ExerciseControls } from '@src/components/Instructions/ExerciseControls';
+import { ExerciseInfoModal } from '@src/components/Instructions/ExerciseInfoModal';
+import { NextExercisePreview } from '@src/components/Instructions/NextExercisePreview';
+import { SuccessModal } from '@src/components/Instructions/SuccessModal';
+import { TimerCircle } from '@src/components/Instructions/TimerCircle';
+import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Animated,
   Dimensions,
   Image,
   Modal,
@@ -10,21 +19,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { Entypo } from '@expo/vector-icons';
 import { FontStyles } from '../../lib/fonts';
-import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
-import { TimerCircle } from '@src/components/Instructions/TimerCircle';
-import { CountdownOverlay } from '@src/components/Instructions/CountdownOverlay';
-import { NextExercisePreview } from '@src/components/Instructions/NextExercisePreview';
-import { ExerciseControls } from '@src/components/Instructions/ExerciseControls';
-import { ExerciseInfoModal } from '@src/components/Instructions/ExerciseInfoModal';
-import { SuccessModal } from '@src/components/Instructions/SuccessModal';
-import Header from '../UI/Header';
 import { completeToday, shouldShowSuccessModal } from '../../lib/streakManager';
+import Header from '../UI/Header';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window');
 const containerSize = screenWidth * 0.85;
 const imageSize = screenWidth * 0.8;
 const borderRadius = screenWidth * 0.7;
@@ -58,8 +57,8 @@ interface ExerciseModalProps {
 const ExerciseImage = memo(
   ({
     exercise,
-    showCountdown,
-    countdownValue,
+    showCountdown: _showCountdown,
+    countdownValue: _countdownValue,
   }: {
     exercise: Exercise;
     showCountdown: boolean;
@@ -133,7 +132,7 @@ const timerDisplayStyles = StyleSheet.create({
 });
 
 const TimerDisplay = memo(
-  ({ remainingTime, totalTime }: { remainingTime: number; totalTime: number }) => {
+  ({ remainingTime, totalTime: _totalTime }: { remainingTime: number; totalTime: number }) => {
     const formatTime = useCallback((seconds: number) => {
       const mins = Math.floor(seconds / 60);
       const secs = seconds % 60;

@@ -1,4 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authService } from './auth';
+import { supabase } from './supabase';
 
 export interface HistoryItem {
   id: string;
@@ -11,11 +13,153 @@ export interface HistoryItem {
   totalMinutes?: number;
 }
 
+export interface DatabaseHistoryItem {
+  id: string;
+  user_id: string;
+  routine_type: string;
+  routine_id: string;
+  routine_name: string;
+  routine_slug: string;
+  duration_minutes: number;
+  exercises_count: number;
+  completed_at: string;
+  completion_percentage: number;
+  calories_burned: number;
+}
+
 export interface MonthlyProgress {
   [day: number]: boolean;
 }
 
 const HISTORY_STORAGE_KEY = 'bendapp_routine_history';
+
+/**
+ * Convert HistoryItem to DatabaseHistoryItem format
+ */
+function convertToDatabaseFormat(
+  item: HistoryItem,
+  userId: string
+): Omit<DatabaseHistoryItem, 'id'> {
+  return {
+    user_id: userId,
+    routine_type: 'yoga', // Default type
+    routine_id: item.id,
+    routine_name: item.name,
+    routine_slug: item.slug,
+    duration_minutes: item.duration,
+    exercises_count: item.exercisesCount || 0,
+    completed_at: new Date(item.completedAt).toISOString(),
+    completion_percentage: 100, // Assume 100% completion for now
+    calories_burned: Math.round(item.duration * 3.5), // Rough estimate: 3.5 calories per minute
+  };
+}
+
+/**
+ * Convert DatabaseHistoryItem to HistoryItem format
+ */
+function convertFromDatabaseFormat(item: DatabaseHistoryItem): HistoryItem {
+  return {
+    id: item.routine_id,
+    name: item.routine_name,
+    duration: item.duration_minutes,
+    slug: item.routine_slug,
+    completedAt: new Date(item.completed_at).getTime(),
+    exercisesCount: item.exercises_count,
+    totalMinutes: item.duration_minutes,
+  };
+}
+
+/**
+ * Save history item to database
+ */
+async function saveToDatabase(item: HistoryItem): Promise<boolean> {
+  try {
+    const user = authService.getCurrentUserFromState();
+    if (!user) {
+      console.log('No user logged in, skipping database save');
+      return false;
+    }
+
+    const dbItem = convertToDatabaseFormat(item, user.id);
+    const { error } = await supabase.from('user_history').insert([dbItem]);
+
+    if (error) {
+      console.error('Error saving to database:', error);
+      return false;
+    }
+
+    console.log('✅ History item saved to database');
+    return true;
+  } catch (error) {
+    console.error('Error saving to database:', error);
+    return false;
+  }
+}
+
+/**
+ * Load history from database
+ */
+async function loadFromDatabase(): Promise<HistoryItem[]> {
+  try {
+    const user = authService.getCurrentUserFromState();
+    if (!user) {
+      console.log('No user logged in, skipping database load');
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from('user_history')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('completed_at', { ascending: false });
+
+    if (error) {
+      console.error('Error loading from database:', error);
+      return [];
+    }
+
+    return data.map(convertFromDatabaseFormat);
+  } catch (error) {
+    console.error('Error loading from database:', error);
+    return [];
+  }
+}
+
+/**
+ * Sync local history to database (for when user logs in)
+ */
+export async function syncLocalHistoryToDatabase(): Promise<boolean> {
+  try {
+    const user = authService.getCurrentUserFromState();
+    if (!user) {
+      console.log('No user logged in, skipping sync');
+      return false;
+    }
+
+    const localHistory = await loadHistory();
+    if (localHistory.length === 0) {
+      console.log('No local history to sync');
+      return true;
+    }
+
+    // Convert local history to database format
+    const dbItems = localHistory.map(item => convertToDatabaseFormat(item, user.id));
+
+    // Insert all items to database
+    const { error } = await supabase.from('user_history').insert(dbItems);
+
+    if (error) {
+      console.error('Error syncing to database:', error);
+      return false;
+    }
+
+    console.log(`✅ Synced ${localHistory.length} history items to database`);
+    return true;
+  } catch (error) {
+    console.error('Error syncing to database:', error);
+    return false;
+  }
+}
 
 /**
  * Get current date in YYYY-MM-DD format
@@ -25,17 +169,41 @@ function getTodayString(): string {
 }
 
 /**
- * Get month and year for grouping
+ * Load history from AsyncStorage and/or database
  */
-function getMonthYear(timestamp: number): string {
-  const date = new Date(timestamp);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+export async function loadHistory(): Promise<HistoryItem[]> {
+  try {
+    const user = authService.getCurrentUserFromState();
+
+    if (user) {
+      // User is logged in, load from database
+      const dbHistory = await loadFromDatabase();
+      if (dbHistory.length > 0) {
+        return dbHistory;
+      }
+
+      // If no database history, try to sync local history to database
+      const localHistory = await loadLocalHistory();
+      if (localHistory.length > 0) {
+        await syncLocalHistoryToDatabase();
+        return localHistory;
+      }
+
+      return [];
+    } else {
+      // User not logged in, load from local storage
+      return await loadLocalHistory();
+    }
+  } catch (error) {
+    console.error('Error loading history:', error);
+    return [];
+  }
 }
 
 /**
- * Load history from AsyncStorage
+ * Load history from AsyncStorage only
  */
-export async function loadHistory(): Promise<HistoryItem[]> {
+async function loadLocalHistory(): Promise<HistoryItem[]> {
   try {
     const savedHistory = await AsyncStorage.getItem(HISTORY_STORAGE_KEY);
     if (savedHistory) {
@@ -44,7 +212,7 @@ export async function loadHistory(): Promise<HistoryItem[]> {
     }
     return [];
   } catch (error) {
-    console.error('Error loading history:', error);
+    console.error('Error loading local history:', error);
     return [];
   }
 }
@@ -75,8 +243,6 @@ export async function addToHistory(routine: {
   totalMinutes?: number;
 }): Promise<boolean> {
   try {
-    const currentHistory = await loadHistory();
-
     const historyItem: HistoryItem = {
       id: routine.id,
       name: routine.name,
@@ -88,13 +254,28 @@ export async function addToHistory(routine: {
       totalMinutes: routine.totalMinutes,
     };
 
-    // Add to beginning of array (most recent first)
-    const updatedHistory = [historyItem, ...currentHistory];
+    // Save to database if user is logged in
+    const user = authService.getCurrentUserFromState();
+    if (user) {
+      const dbSuccess = await saveToDatabase(historyItem);
+      if (dbSuccess) {
+        console.log('✅ History saved to database');
+        return true;
+      }
+    }
 
-    // Keep only last 100 items to prevent storage bloat
+    // Also save to local storage (for offline support and non-logged-in users)
+    const currentHistory = await loadLocalHistory();
+    const updatedHistory = [historyItem, ...currentHistory];
     const limitedHistory = updatedHistory.slice(0, 100);
 
-    return await saveHistory(limitedHistory);
+    const localSuccess = await saveHistory(limitedHistory);
+    if (localSuccess) {
+      console.log('✅ History saved to local storage');
+      return true;
+    }
+
+    return false;
   } catch (error) {
     console.error('Error adding to history:', error);
     return false;

@@ -71,7 +71,7 @@ export const Calendar = memo(
         <View style={styles.calendarContainer}>
           {/* Days of week header */}
           <View className='flex-row mb-4'>
-            {calendarData.daysOfWeek.map((day, index) => (
+            {calendarData.daysOfWeek.map((day, _index) => (
               <View key={day} className='flex-1 items-center'>
                 <Text style={styles.dayLabel}>{day}</Text>
               </View>

@@ -1,3 +1,5 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -10,9 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Fonts, FontStyles } from '../lib/fonts';
-import * as Haptics from 'expo-haptics';
+import { FontStyles } from '../lib/fonts';
 
 const recommendedRoutines = [
   { id: 1, title: 'Pelvic Tilt', duration: '7 MINUTES', color: '#8B5CF6', icon: 'human-male' },

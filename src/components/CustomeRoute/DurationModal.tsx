@@ -1,13 +1,13 @@
+import { ExerciseDurationCard } from '@src/components/Shared/ExerciseDurationCard';
+import { NextButton } from '@src/components/Shared/NextButton';
+import * as Haptics from 'expo-haptics';
+import { StatusBar } from 'expo-status-bar';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, Modal, SafeAreaView, ScrollView, View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import * as Haptics from 'expo-haptics';
-import { NextButton } from '@src/components/Shared/NextButton';
-import { ExerciseDurationCard } from '@src/components/Shared/ExerciseDurationCard';
+import { saveCustomRoutine } from '../../lib/customRoutines';
 import Gravity from '../UI/Gravity';
 import Header from '../UI/Header';
 import DesignCoverModal from './DesignCoverModal';
-import { saveCustomRoutine } from '../../lib/customRoutines';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -170,7 +170,7 @@ const DurationModal = memo(({ visible, onClose, exercises, onSave }: DurationMod
               }}
               showsVerticalScrollIndicator={false}
             >
-              {exercisesWithDuration.map((exercise, index) => (
+              {exercisesWithDuration.map((exercise, _index) => (
                 <ExerciseDurationCard
                   key={exercise.id}
                   exercise={exercise}

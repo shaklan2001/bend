@@ -27,7 +27,7 @@ interface LogInSheetProps {
 const LogInSheet: React.FC<LogInSheetProps> = ({
   visible,
   onClose,
-  onSwitchToCreateAccount,
+  onSwitchToCreateAccount: _onSwitchToCreateAccount,
   onSuccess,
 }) => {
   const [email, setEmail] = useState('');

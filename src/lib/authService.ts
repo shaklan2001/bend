@@ -1,5 +1,4 @@
 import { supabase } from './supabase';
-import { Alert } from 'react-native';
 
 export interface User {
   id: string;
@@ -88,7 +87,6 @@ class AuthService {
     }
   }
 
-
   async signIn({ email, password }: SignInData): Promise<AuthResponse> {
     try {
       if (!email || !password) {
@@ -135,7 +133,6 @@ class AuthService {
       };
     }
   }
-
 
   async signOut(): Promise<AuthResponse> {
     try {
