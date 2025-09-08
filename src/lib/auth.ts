@@ -78,7 +78,7 @@ class AuthService {
   public subscribe(listener: AuthStateListener): () => void {
     this.listeners.add(listener);
     listener(this.state);
-    
+
     return () => {
       this.listeners.delete(listener);
     };
@@ -104,7 +104,11 @@ class AuthService {
     return this.state.error;
   }
 
-  async signUp({ email, password, fullName }: SignUpData): Promise<{ success: boolean; error?: string }> {
+  async signUp({
+    email,
+    password,
+    fullName,
+  }: SignUpData): Promise<{ success: boolean; error?: string }> {
     try {
       this.setLoading(true);
       this.setError(null);
@@ -151,21 +155,21 @@ class AuthService {
       };
 
       this.setState({ user, isAuthenticated: true, loading: false });
-      
+
       try {
         await syncLocalHistoryToDatabase();
         console.log('✅ Local history synced to database after sign up');
       } catch (error) {
         console.error('Error syncing history after sign up:', error);
       }
-      
+
       try {
         await syncLocalFavoritesToDatabase();
         console.log('✅ Local favorites synced to database after sign up');
       } catch (error) {
         console.error('Error syncing favorites after sign up:', error);
       }
-      
+
       return { success: true };
     } catch (error) {
       console.error('Sign up error:', error);
@@ -210,21 +214,21 @@ class AuthService {
       };
 
       this.setState({ user, isAuthenticated: true, loading: false });
-      
+
       try {
         await syncLocalHistoryToDatabase();
         console.log('✅ Local history synced to database after sign in');
       } catch (error) {
         console.error('Error syncing history after sign in:', error);
       }
-      
+
       try {
         await syncLocalFavoritesToDatabase();
         console.log('✅ Local favorites synced to database after sign in');
       } catch (error) {
         console.error('Error syncing favorites after sign in:', error);
       }
-      
+
       return { success: true };
     } catch (error) {
       console.error('Sign in error:', error);
@@ -297,7 +301,10 @@ class AuthService {
     }
   }
 
-  async updateProfile(userId: string, updates: Partial<User>): Promise<{ success: boolean; error?: string; user?: User }> {
+  async updateProfile(
+    userId: string,
+    updates: Partial<User>
+  ): Promise<{ success: boolean; error?: string; user?: User }> {
     try {
       this.setLoading(true);
       this.setError(null);
@@ -374,14 +381,14 @@ class AuthService {
           email: session.user.email || '',
         };
         this.setState({ user, isAuthenticated: true, loading: false });
-        
+
         try {
           await syncLocalHistoryToDatabase();
           console.log('✅ Local history synced to database via auth state change');
         } catch (error) {
           console.error('Error syncing history via auth state change:', error);
         }
-        
+
         try {
           await syncLocalFavoritesToDatabase();
           console.log('✅ Local favorites synced to database via auth state change');

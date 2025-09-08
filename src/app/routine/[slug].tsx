@@ -1,26 +1,26 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  Share,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { Entypo, MaterialCommunityIcons } from '@expo/vector-icons';
-import { FontStyles } from '../../lib/fonts';
-import * as Haptics from 'expo-haptics';
-import { supabase } from '../../lib/supabase';
 import Feather from '@expo/vector-icons/Feather';
-import { isRoutineSaved, removeRoutine, SavedRoutine, saveRoutine } from '../../lib/saveRoutine';
-import { CustomRoutine, getCustomRoutineBySlug } from '../../lib/customRoutines';
-import { GradientButton, ShareButton } from '../../components/Button';
+import { ExerciseModal } from '@src/components/Instructions/ExerciseModal';
 import { ExerciseDurationCard } from '@src/components/Shared/ExerciseDurationCard';
 import Gravity from '@src/components/UI/Gravity';
-import { ExerciseModal } from '@src/components/Instructions/ExerciseModal';
+import * as Haptics from 'expo-haptics';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+    Pressable,
+    SafeAreaView,
+    ScrollView,
+    Share,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { GradientButton, ShareButton } from '../../components/Button';
+import { getCustomRoutineBySlug } from '../../lib/customRoutines';
+import { FontStyles } from '../../lib/fonts';
+import { isRoutineSaved, removeRoutine, SavedRoutine, saveRoutine } from '../../lib/saveRoutine';
+import { supabase } from '../../lib/supabase';
 
 interface Exercise {
   id: string;

@@ -17,17 +17,20 @@ import LogInSheet from '../components/Shared/LogInSheet';
 import { FontStyles } from '../lib/fonts';
 import { checkOnboardingStatus } from '../lib/supabase';
 
-const CircleStep = memo(({ circleScale }: { circleScale: Animated.Value }) => (
-  <View className='flex-1 justify-center items-center'>
-    <Animated.View
-      style={{
-        transform: [{ scale: circleScale }],
-        backgroundColor: '#A69B8A',
-      }}
-      className='w-32 h-32 rounded-full mr-8'
-    />
-  </View>
-), () => true); 
+const CircleStep = memo(
+  ({ circleScale }: { circleScale: Animated.Value }) => (
+    <View className='flex-1 justify-center items-center'>
+      <Animated.View
+        style={{
+          transform: [{ scale: circleScale }],
+          backgroundColor: '#A69B8A',
+        }}
+        className='w-32 h-32 rounded-full mr-8'
+      />
+    </View>
+  ),
+  () => true
+);
 
 const LogoStep = memo(
   ({
@@ -63,7 +66,7 @@ const LogoStep = memo(
       </View>
     </View>
   ),
-  () => true 
+  () => true
 );
 
 const ReferralCodeModal = memo(
@@ -72,7 +75,7 @@ const ReferralCodeModal = memo(
     onClose,
     referralCode,
     setReferralCode,
-    onLogin,
+    onLogin: _onLogin,
   }: {
     visible: boolean;
     onClose: () => void;
@@ -159,9 +162,8 @@ const ReferralCodeModal = memo(
       </View>
     </Modal>
   ),
-  (prevProps, nextProps) => 
-    prevProps.visible === nextProps.visible && 
-    prevProps.referralCode === nextProps.referralCode
+  (prevProps, nextProps) =>
+    prevProps.visible === nextProps.visible && prevProps.referralCode === nextProps.referralCode
 );
 
 export default function IntroScreen() {
@@ -299,7 +301,15 @@ export default function IntroScreen() {
       clearTimeout(firstTimeout);
       clearTimeout(secondTimeout);
     };
-  }, [onboardingCompleted, circleScale, circleMoveX, textSlideX, textOpacity, finalScreenOpacity, router]);
+  }, [
+    onboardingCompleted,
+    circleScale,
+    circleMoveX,
+    textSlideX,
+    textOpacity,
+    finalScreenOpacity,
+    router,
+  ]);
 
   return (
     <SafeAreaView className='flex-1 bg-white'>

@@ -1,20 +1,20 @@
+import CoverPreviewCard from '@src/components/Shared/CoverPreviewCard';
+import { NextButton } from '@src/components/Shared/NextButton';
+import * as Haptics from 'expo-haptics';
+import { StatusBar } from 'expo-status-bar';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Animated,
-  Dimensions,
-  Image,
-  Modal,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Animated,
+    Dimensions,
+    Image,
+    Modal,
+    SafeAreaView,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import * as Haptics from 'expo-haptics';
-import { NextButton } from '@src/components/Shared/NextButton';
-import CoverPreviewCard from '@src/components/Shared/CoverPreviewCard';
 import Header from '../UI/Header';
 
 const { height: screenHeight } = Dimensions.get('window');
@@ -46,7 +46,7 @@ interface DesignCoverModalProps {
 const PhotoSelector = memo(
   ({
     exercises,
-    selectedImages,
+    selectedImages: _selectedImages,
     onSelectImage,
   }: {
     exercises: ExerciseWithDuration[];

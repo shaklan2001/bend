@@ -48,17 +48,6 @@ function getYesterdayString(): string {
 }
 
 /**
- * Check if two dates are consecutive days
- */
-function areConsecutiveDays(date1: string, date2: string): boolean {
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
-  const diffTime = Math.abs(d2.getTime() - d1.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays === 1;
-}
-
-/**
  * Load streak data from AsyncStorage
  */
 export async function loadStreakData(): Promise<StreakData> {

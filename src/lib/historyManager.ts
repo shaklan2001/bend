@@ -36,7 +36,10 @@ const HISTORY_STORAGE_KEY = 'bendapp_routine_history';
 /**
  * Convert HistoryItem to DatabaseHistoryItem format
  */
-function convertToDatabaseFormat(item: HistoryItem, userId: string): Omit<DatabaseHistoryItem, 'id'> {
+function convertToDatabaseFormat(
+  item: HistoryItem,
+  userId: string
+): Omit<DatabaseHistoryItem, 'id'> {
   return {
     user_id: userId,
     routine_type: 'yoga', // Default type
@@ -78,9 +81,7 @@ async function saveToDatabase(item: HistoryItem): Promise<boolean> {
     }
 
     const dbItem = convertToDatabaseFormat(item, user.id);
-    const { error } = await supabase
-      .from('user_history')
-      .insert([dbItem]);
+    const { error } = await supabase.from('user_history').insert([dbItem]);
 
     if (error) {
       console.error('Error saving to database:', error);
@@ -145,9 +146,7 @@ export async function syncLocalHistoryToDatabase(): Promise<boolean> {
     const dbItems = localHistory.map(item => convertToDatabaseFormat(item, user.id));
 
     // Insert all items to database
-    const { error } = await supabase
-      .from('user_history')
-      .insert(dbItems);
+    const { error } = await supabase.from('user_history').insert(dbItems);
 
     if (error) {
       console.error('Error syncing to database:', error);
@@ -170,34 +169,26 @@ function getTodayString(): string {
 }
 
 /**
- * Get month and year for grouping
- */
-function getMonthYear(timestamp: number): string {
-  const date = new Date(timestamp);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-}
-
-/**
  * Load history from AsyncStorage and/or database
  */
 export async function loadHistory(): Promise<HistoryItem[]> {
   try {
     const user = authService.getCurrentUserFromState();
-    
+
     if (user) {
       // User is logged in, load from database
       const dbHistory = await loadFromDatabase();
       if (dbHistory.length > 0) {
         return dbHistory;
       }
-      
+
       // If no database history, try to sync local history to database
       const localHistory = await loadLocalHistory();
       if (localHistory.length > 0) {
         await syncLocalHistoryToDatabase();
         return localHistory;
       }
-      
+
       return [];
     } else {
       // User not logged in, load from local storage
@@ -277,7 +268,7 @@ export async function addToHistory(routine: {
     const currentHistory = await loadLocalHistory();
     const updatedHistory = [historyItem, ...currentHistory];
     const limitedHistory = updatedHistory.slice(0, 100);
-    
+
     const localSuccess = await saveHistory(limitedHistory);
     if (localSuccess) {
       console.log('✅ History saved to local storage');

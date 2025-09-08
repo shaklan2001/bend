@@ -1,17 +1,17 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
-import {
-  Animated,
-  Modal,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import LottieView from 'lottie-react-native';
+import React, { memo, useCallback, useEffect, useState } from 'react';
+import {
+    Animated,
+    Modal,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import { FontStyles } from '../../lib/fonts';
-import { router } from 'expo-router';
 import { completeToday } from '../../lib/streakManager';
 
 interface SuccessModalProps {
@@ -38,7 +38,7 @@ export const SuccessModal = memo(
   ({
     visible,
     onClose,
-    onAddToStreak,
+    onAddToStreak: _onAddToStreak,
     exercisesCount,
     totalMinutes,
     daysCompleted,

@@ -1,29 +1,30 @@
+import { Entypo } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { router, useLocalSearchParams } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import {
-  Animated,
-  SafeAreaView,
-  Share,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Animated,
+    SafeAreaView,
+    Share,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { Entypo } from '@expo/vector-icons';
 import { FontStyles } from '../lib/fonts';
-import { router, useLocalSearchParams } from 'expo-router';
-import * as Haptics from 'expo-haptics';
-import { getStreakScreenData, loadStreakData, saveStreakData } from '../lib/streakManager';
-
-interface StreakScreenProps {
-  exercisesCount: number;
-  totalMinutes: number;
-  routineName?: string;
-  routineSlug?: string;
-}
+import { getStreakScreenData } from '../lib/streakManager';
 
 const StreakDay = memo(
-  ({ day, isCompleted, isToday }: { day: string; isCompleted: boolean; isToday: boolean }) => {
+  ({
+    day,
+    isCompleted,
+    isToday: _isToday,
+  }: {
+    day: string;
+    isCompleted: boolean;
+    isToday: boolean;
+  }) => {
     return (
       <View className='items-center' style={{ minWidth: 32 }}>
         <Text style={streakScreenStyles.dayLabel}>{day}</Text>
@@ -58,7 +59,6 @@ export default function StreakScreen() {
 
   const [currentStreak, setCurrentStreak] = useState(1);
   const [streakData, setStreakData] = useState<boolean[]>([]);
-  const [canRestore, setCanRestore] = useState(false);
   const [streakRestoresAvailable, setStreakRestoresAvailable] = useState(0);
   const fadeAnim = useState(new Animated.Value(0))[0];
 
@@ -78,13 +78,11 @@ export default function StreakScreen() {
       const streakScreenData = await getStreakScreenData();
       setCurrentStreak(streakScreenData.currentStreak);
       setStreakData(streakScreenData.weeklyData);
-      setCanRestore(streakScreenData.canRestore);
       setStreakRestoresAvailable(streakScreenData.streakRestoresAvailable);
     } catch (error) {
       console.error('Error loading streak data:', error);
       setCurrentStreak(1);
       setStreakData([true, false, false, false, false, false, false]);
-      setCanRestore(false);
       setStreakRestoresAvailable(0);
     }
   }, []);

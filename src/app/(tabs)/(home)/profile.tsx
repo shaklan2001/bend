@@ -142,15 +142,15 @@ const ProfileScreen = () => {
   const handleAuthSuccess = useCallback(async () => {
     setShowCreateAccount(false);
     setShowLogIn(false);
-    
+
     // Sync local data to database after successful authentication
     try {
       const historySyncSuccess = await syncLocalHistoryToDatabase();
       const favoritesSyncSuccess = await syncLocalFavoritesToDatabase();
-      
+
       if (historySyncSuccess || favoritesSyncSuccess) {
         Alert.alert(
-          'Welcome!', 
+          'Welcome!',
           'Your local exercise history and favorites have been synced to your account.',
           [{ text: 'OK' }]
         );

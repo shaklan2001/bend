@@ -1,6 +1,6 @@
-import React, { memo, useCallback, useMemo } from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import React, { memo, useCallback } from 'react';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { FontStyles } from '../../lib/fonts';
 
 interface Exercise {

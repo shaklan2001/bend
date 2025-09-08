@@ -31,7 +31,10 @@ const FAVORITES_STORAGE_KEY = 'bendapp_saved_routines';
 /**
  * Convert SavedRoutine to DatabaseFavoriteItem format
  */
-function convertToDatabaseFormat(item: SavedRoutine, userId: string): Omit<DatabaseFavoriteItem, 'id'> {
+function convertToDatabaseFormat(
+  item: SavedRoutine,
+  userId: string
+): Omit<DatabaseFavoriteItem, 'id'> {
   return {
     user_id: userId,
     routine_type: 'yoga', // Default type
@@ -73,9 +76,7 @@ async function saveToDatabase(item: SavedRoutine): Promise<boolean> {
     }
 
     const dbItem = convertToDatabaseFormat(item, user.id);
-    const { error } = await supabase
-      .from('user_favorites')
-      .insert([dbItem]);
+    const { error } = await supabase.from('user_favorites').insert([dbItem]);
 
     if (error) {
       console.error('Error saving favorite to database:', error);
@@ -154,21 +155,21 @@ async function saveLocalFavorites(favorites: SavedRoutine[]): Promise<boolean> {
 export async function loadFavorites(): Promise<SavedRoutine[]> {
   try {
     const user = authService.getCurrentUserFromState();
-    
+
     if (user) {
       // User is logged in, load from database
       const dbFavorites = await loadFromDatabase();
       if (dbFavorites.length > 0) {
         return dbFavorites;
       }
-      
+
       // If no database favorites, try to sync local favorites to database
       const localFavorites = await loadLocalFavorites();
       if (localFavorites.length > 0) {
         await syncLocalFavoritesToDatabase();
         return localFavorites;
       }
-      
+
       return [];
     } else {
       // User not logged in, load from local storage
@@ -209,7 +210,7 @@ export async function saveRoutine(routine: Omit<SavedRoutine, 'savedAt'>): Promi
     } else {
       currentFavorites.push(favoriteItem);
     }
-    
+
     const localSuccess = await saveLocalFavorites(currentFavorites);
     if (localSuccess) {
       console.log('✅ Favorite saved to local storage');
@@ -229,7 +230,7 @@ export async function saveRoutine(routine: Omit<SavedRoutine, 'savedAt'>): Promi
 export async function removeRoutine(routineId: string): Promise<boolean> {
   try {
     const user = authService.getCurrentUserFromState();
-    
+
     // Remove from database if user is logged in
     if (user) {
       const { error } = await supabase
@@ -248,7 +249,7 @@ export async function removeRoutine(routineId: string): Promise<boolean> {
     // Also remove from local storage
     const currentFavorites = await loadLocalFavorites();
     const updatedFavorites = currentFavorites.filter(r => r.id !== routineId);
-    
+
     const localSuccess = await saveLocalFavorites(updatedFavorites);
     if (localSuccess) {
       console.log('✅ Favorite removed from local storage');
@@ -296,9 +297,7 @@ export async function syncLocalFavoritesToDatabase(): Promise<boolean> {
     const dbItems = localFavorites.map(item => convertToDatabaseFormat(item, user.id));
 
     // Insert all items to database
-    const { error } = await supabase
-      .from('user_favorites')
-      .insert(dbItems);
+    const { error } = await supabase.from('user_favorites').insert(dbItems);
 
     if (error) {
       console.error('Error syncing favorites to database:', error);

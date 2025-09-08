@@ -1,16 +1,16 @@
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { useRouter } from 'expo-router';
-import { Fonts, FontStyles } from '../../../lib/fonts';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { memo, useCallback, useEffect, useState } from 'react';
-import YogaCarousel from '../../../components/HomePage/YogaCarousel';
-import SearchModal from '../../../components/SearchModal';
+import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import BrowseByArea from '../../../components/HomePage/BrowseByArea';
 import RecommendedRoutines from '../../../components/HomePage/RecommendedRoutines';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient } from 'expo-linear-gradient';
-import * as Haptics from 'expo-haptics';
+import YogaCarousel from '../../../components/HomePage/YogaCarousel';
+import SearchModal from '../../../components/SearchModal';
+import { FontStyles } from '../../../lib/fonts';
 import { supabase } from '../../../lib/supabase';
 
 interface AreaCard {
@@ -177,10 +177,7 @@ const Home = () => {
       setIsLoadingBodyParts(true);
       setBodyPartsError(null);
 
-      const { data: testData, error: testError } = await supabase
-        .from('body_parts')
-        .select('count')
-        .limit(1);
+      const { error: testError } = await supabase.from('body_parts').select('count').limit(1);
 
       if (testError) {
         console.error('Supabase connection test failed:', testError);

@@ -1,14 +1,13 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { FontStyles } from '../../../lib/fonts';
-import * as Haptics from 'expo-haptics';
-import { getSavedRoutines, SavedRoutine } from '../../../lib/saveRoutine';
-import { HistoryList } from '../../../components/Shared/HistoryList';
-import { HistoryItem, loadHistory } from '../../../lib/historyManager';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { SafeAreaView, ScrollView, Text, View } from 'react-native';
 import { BaseRecommendedCard } from '../../../components/HomePage/RecommendedRoutines';
+import { HistoryList } from '../../../components/Shared/HistoryList';
+import { FontStyles } from '../../../lib/fonts';
+import { HistoryItem, loadHistory } from '../../../lib/historyManager';
+import { getSavedRoutines, SavedRoutine } from '../../../lib/saveRoutine';
 
 const EmptyState = memo(() => (
   <View className='flex-1 justify-center items-center px-6'>
