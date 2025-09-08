@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -12,11 +13,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Fonts, FontStyles } from '../../lib/fonts';
+import { useAuth } from '../../hooks/useAuth';
+import { FontStyles } from '../../lib/fonts';
 import Button from '../Button';
-import { useAppDispatch, useAuthLoading } from '../../store/hooks';
-import { clearError, signUpUser } from '../../store/slices/authSlice';
 
 interface CreateAccountSheetProps {
   visible: boolean;
@@ -76,8 +75,7 @@ const CreateAccountSheet: React.FC<CreateAccountSheetProps> = ({
   const [confirmEmail, setConfirmEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const dispatch = useAppDispatch();
-  const isLoading = useAuthLoading();
+  const { signUp, loading: isLoading } = useAuth();
 
   const slideAnim = useRef(new Animated.Value(-1000)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -161,18 +159,13 @@ const CreateAccountSheet: React.FC<CreateAccountSheetProps> = ({
     }
 
     try {
-      // Clear any previous errors
-      dispatch(clearError());
+      const result = await signUp({
+        email: email.trim(),
+        password,
+        fullName: firstName.trim(),
+      });
 
-      const result = await dispatch(
-        signUpUser({
-          email: email.trim(),
-          password,
-          fullName: firstName.trim(),
-        })
-      );
-
-      if (signUpUser.fulfilled.match(result)) {
+      if (result.success) {
         Alert.alert(
           'Account Created!',
           'Please check your email for a verification link to complete your registration.',
@@ -196,14 +189,14 @@ const CreateAccountSheet: React.FC<CreateAccountSheetProps> = ({
             },
           ]
         );
-      } else if (signUpUser.rejected.match(result)) {
-        Alert.alert('Sign Up Failed', result.payload?.message || 'An unexpected error occurred');
+      } else {
+        Alert.alert('Sign Up Failed', result.error || 'An unexpected error occurred');
       }
     } catch (error) {
       console.error('Sign up error:', error);
       Alert.alert('Error', 'An unexpected error occurred. Please try again.');
     }
-  }, [firstName, email, confirmEmail, password, dispatch, onSuccess, onClose]);
+  }, [firstName, email, confirmEmail, password, signUp, onSuccess, onClose]);
 
   const handleLogIn = useCallback(() => {
     if (onSwitchToLogIn) {
