@@ -121,7 +121,12 @@ export async function completeToday(routineData?: {
   const currentData = await loadStreakData();
   const today = getTodayString();
 
-  // If already completed today, return current data
+  // Always add to history if routine data is provided (regardless of whether completed today)
+  if (routineData) {
+    await addToHistory(routineData);
+  }
+
+  // If already completed today, return current data (but history was still added above)
   if (currentData.lastCompletionDate === today) {
     return currentData;
   }
@@ -158,11 +163,6 @@ export async function completeToday(routineData?: {
   // Award streak restore at 2-day streak
   if (updatedData.currentStreak === 2) {
     updatedData.streakRestoresAvailable += 1;
-  }
-
-  // Add to history if routine data is provided
-  if (routineData) {
-    await addToHistory(routineData);
   }
 
   await saveStreakData(updatedData);

@@ -8,7 +8,9 @@ import ActionButton from '../../../components/ActionButton';
 import CreateAccountSheet from '../../../components/Shared/CreateAccountSheet';
 import LogInSheet from '../../../components/Shared/LogInSheet';
 import { useAuth } from '../../../hooks/useAuth';
+import { syncLocalFavoritesToDatabase } from '../../../lib/favoriteManager';
 import { FontStyles } from '../../../lib/fonts';
+import { syncLocalHistoryToDatabase } from '../../../lib/historyManager';
 
 const ProfileFooter = memo(() => {
   return (
@@ -137,10 +139,26 @@ const ProfileScreen = () => {
     ]);
   }, [signOut]);
 
-  const handleAuthSuccess = useCallback(() => {
+  const handleAuthSuccess = useCallback(async () => {
     setShowCreateAccount(false);
     setShowLogIn(false);
-    // Optionally show welcome message or refresh the screen
+    
+    // Sync local data to database after successful authentication
+    try {
+      const historySyncSuccess = await syncLocalHistoryToDatabase();
+      const favoritesSyncSuccess = await syncLocalFavoritesToDatabase();
+      
+      if (historySyncSuccess || favoritesSyncSuccess) {
+        Alert.alert(
+          'Welcome!', 
+          'Your local exercise history and favorites have been synced to your account.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('Error syncing data after auth:', error);
+      // Don't show error to user, just log it
+    }
   }, []);
 
   return (
@@ -271,12 +289,14 @@ const ProfileScreen = () => {
         visible={showCreateAccount}
         onClose={closeCreateAccount}
         onSwitchToLogIn={switchToLogIn}
+        onSuccess={handleAuthSuccess}
       />
 
       <LogInSheet
         visible={showLogIn}
         onClose={closeLogIn}
         onSwitchToCreateAccount={switchToCreateAccount}
+        onSuccess={handleAuthSuccess}
       />
     </SafeAreaView>
   );
