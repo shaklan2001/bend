@@ -1,3 +1,4 @@
+import { syncLocalCustomRoutinesToDatabase } from './customRoutineManager';
 import { syncLocalFavoritesToDatabase } from './favoriteManager';
 import { syncLocalHistoryToDatabase } from './historyManager';
 import { supabase } from './supabase';
@@ -170,6 +171,13 @@ class AuthService {
         console.error('Error syncing favorites after sign up:', error);
       }
 
+      try {
+        await syncLocalCustomRoutinesToDatabase();
+        console.log('✅ Local custom routines synced to database after sign up');
+      } catch (error) {
+        console.error('Error syncing custom routines after sign up:', error);
+      }
+
       return { success: true };
     } catch (error) {
       console.error('Sign up error:', error);
@@ -227,6 +235,13 @@ class AuthService {
         console.log('✅ Local favorites synced to database after sign in');
       } catch (error) {
         console.error('Error syncing favorites after sign in:', error);
+      }
+
+      try {
+        await syncLocalCustomRoutinesToDatabase();
+        console.log('✅ Local custom routines synced to database after sign in');
+      } catch (error) {
+        console.error('Error syncing custom routines after sign in:', error);
       }
 
       return { success: true };
@@ -394,6 +409,13 @@ class AuthService {
           console.log('✅ Local favorites synced to database via auth state change');
         } catch (error) {
           console.error('Error syncing favorites via auth state change:', error);
+        }
+
+        try {
+          await syncLocalCustomRoutinesToDatabase();
+          console.log('✅ Local custom routines synced to database via auth state change');
+        } catch (error) {
+          console.error('Error syncing custom routines via auth state change:', error);
         }
       }
     });
