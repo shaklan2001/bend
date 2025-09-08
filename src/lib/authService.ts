@@ -28,12 +28,8 @@ export interface SignInData {
 }
 
 class AuthService {
-  /**
-   * Sign up a new user with email and password
-   */
   async signUp({ email, password, fullName }: SignUpData): Promise<AuthResponse> {
     try {
-      // Validate inputs
       if (!email || !password || !fullName) {
         return {
           success: false,
@@ -48,7 +44,6 @@ class AuthService {
         };
       }
 
-      // Sign up with Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email: email.toLowerCase().trim(),
         password,
@@ -74,7 +69,6 @@ class AuthService {
         };
       }
 
-      // Get the created profile
       const profile = await this.getProfile(data.user.id);
 
       return {
@@ -94,12 +88,9 @@ class AuthService {
     }
   }
 
-  /**
-   * Sign in existing user with email and password
-   */
+
   async signIn({ email, password }: SignInData): Promise<AuthResponse> {
     try {
-      // Validate inputs
       if (!email || !password) {
         return {
           success: false,
@@ -107,7 +98,6 @@ class AuthService {
         };
       }
 
-      // Sign in with Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.toLowerCase().trim(),
         password,
@@ -128,7 +118,6 @@ class AuthService {
         };
       }
 
-      // Get the user profile
       const profile = await this.getProfile(data.user.id);
 
       return {
@@ -147,9 +136,7 @@ class AuthService {
     }
   }
 
-  /**
-   * Sign out the current user
-   */
+
   async signOut(): Promise<AuthResponse> {
     try {
       const { error } = await supabase.auth.signOut();
@@ -174,9 +161,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Get current user session
-   */
   async getCurrentUser(): Promise<User | null> {
     try {
       const {
@@ -202,9 +186,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Get user profile from profiles table
-   */
   async getProfile(userId: string): Promise<User | null> {
     try {
       const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
@@ -221,9 +202,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Update user profile
-   */
   async updateProfile(userId: string, updates: Partial<User>): Promise<AuthResponse> {
     try {
       const { data, error } = await supabase
@@ -254,9 +232,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Send password reset email
-   */
   async resetPassword(email: string): Promise<AuthResponse> {
     try {
       if (!email) {
@@ -288,9 +263,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Listen to authentication state changes
-   */
   onAuthStateChange(callback: (user: User | null) => void) {
     return supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
@@ -309,9 +281,6 @@ class AuthService {
     });
   }
 
-  /**
-   * Check if user is authenticated
-   */
   async isAuthenticated(): Promise<boolean> {
     try {
       const {
@@ -325,6 +294,5 @@ class AuthService {
   }
 }
 
-// Export a singleton instance
 export const authService = new AuthService();
 export default authService;

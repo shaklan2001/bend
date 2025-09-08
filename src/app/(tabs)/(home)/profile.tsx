@@ -1,16 +1,14 @@
-import React, { memo, useCallback, useState } from 'react';
-import { Alert, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import Header from '@src/components/UI/Header';
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { FontStyles } from '../../../lib/fonts';
+import { StatusBar } from 'expo-status-bar';
+import React, { memo, useCallback, useState } from 'react';
+import { Alert, SafeAreaView, ScrollView, Text, View } from 'react-native';
 import ActionButton from '../../../components/ActionButton';
 import CreateAccountSheet from '../../../components/Shared/CreateAccountSheet';
 import LogInSheet from '../../../components/Shared/LogInSheet';
-import * as Haptics from 'expo-haptics';
-import Header from '@src/components/UI/Header';
-import { useAppDispatch, useAuth } from '../../../store/hooks';
-import { signOutUser } from '../../../store/slices/authSlice';
+import { useAuth } from '../../../hooks/useAuth';
+import { FontStyles } from '../../../lib/fonts';
 
 const ProfileFooter = memo(() => {
   return (
@@ -64,8 +62,7 @@ const ProfileScreen = () => {
   const [showCreateAccount, setShowCreateAccount] = useState(false);
   const [showLogIn, setShowLogIn] = useState(false);
 
-  const { user, isAuthenticated } = useAuth();
-  const dispatch = useAppDispatch();
+  const { user, isAuthenticated, signOut } = useAuth();
 
   const handleClose = useCallback(() => {
     router.back();
@@ -127,12 +124,9 @@ const ProfileScreen = () => {
         style: 'destructive',
         onPress: async () => {
           try {
-            const result = await dispatch(signOutUser());
-            if (signOutUser.fulfilled.match(result)) {
-              // Optionally show success message or navigate somewhere
-              console.log('Signed out successfully');
-            } else if (signOutUser.rejected.match(result)) {
-              Alert.alert('Error', result.payload?.message || 'Failed to sign out');
+            const result = await signOut();
+            if (!result.success) {
+              Alert.alert('Error', result.error || 'Failed to sign out');
             }
           } catch (error) {
             console.error('Sign out error:', error);
@@ -141,7 +135,7 @@ const ProfileScreen = () => {
         },
       },
     ]);
-  }, [dispatch]);
+  }, [signOut]);
 
   const handleAuthSuccess = useCallback(() => {
     setShowCreateAccount(false);

@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -11,12 +12,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Fonts, FontStyles } from '../../lib/fonts';
+import { useAuth } from '../../hooks/useAuth';
+import { FontStyles } from '../../lib/fonts';
 import Button from '../Button';
 import { MemoizedInput } from './CreateAccountSheet';
-import { useAppDispatch, useAuthLoading } from '../../store/hooks';
-import { clearError, resetPassword, signInUser } from '../../store/slices/authSlice';
 
 interface LogInSheetProps {
   visible: boolean;
@@ -34,8 +33,7 @@ const LogInSheet: React.FC<LogInSheetProps> = ({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const dispatch = useAppDispatch();
-  const isLoading = useAuthLoading();
+  const { signIn, resetPassword, loading: isLoading } = useAuth();
 
   const slideAnim = useRef(new Animated.Value(-1000)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -99,17 +97,12 @@ const LogInSheet: React.FC<LogInSheetProps> = ({
     }
 
     try {
-      // Clear any previous errors
-      dispatch(clearError());
+      const result = await signIn({
+        email: email.trim(),
+        password,
+      });
 
-      const result = await dispatch(
-        signInUser({
-          email: email.trim(),
-          password,
-        })
-      );
-
-      if (signInUser.fulfilled.match(result)) {
+      if (result.success) {
         // Clear form
         setEmail('');
         setPassword('');
@@ -120,14 +113,14 @@ const LogInSheet: React.FC<LogInSheetProps> = ({
         } else {
           onClose();
         }
-      } else if (signInUser.rejected.match(result)) {
-        Alert.alert('Sign In Failed', result.payload?.message || 'An unexpected error occurred');
+      } else {
+        Alert.alert('Sign In Failed', result.error || 'An unexpected error occurred');
       }
     } catch (error) {
       console.error('Sign in error:', error);
       Alert.alert('Error', 'An unexpected error occurred. Please try again.');
     }
-  }, [email, password, dispatch, onSuccess, onClose]);
+  }, [email, password, signIn, onSuccess, onClose]);
 
   const handleForgotPassword = useCallback(async () => {
     if (!email.trim()) {
@@ -145,16 +138,16 @@ const LogInSheet: React.FC<LogInSheetProps> = ({
         text: 'Send',
         onPress: async () => {
           try {
-            const result = await dispatch(resetPassword(email.trim()));
+            const result = await resetPassword(email.trim());
 
-            if (resetPassword.fulfilled.match(result)) {
+            if (result.success) {
               Alert.alert(
                 'Email Sent',
                 'Please check your email for password reset instructions.',
                 [{ text: 'OK' }]
               );
-            } else if (resetPassword.rejected.match(result)) {
-              Alert.alert('Error', result.payload?.message || 'Failed to send reset email');
+            } else {
+              Alert.alert('Error', result.error || 'Failed to send reset email');
             }
           } catch (error) {
             console.error('Reset password error:', error);
@@ -163,7 +156,7 @@ const LogInSheet: React.FC<LogInSheetProps> = ({
         },
       },
     ]);
-  }, [email, dispatch]);
+  }, [email, resetPassword]);
 
   return (
     <Modal visible={visible} transparent={true} animationType='none' onRequestClose={onClose}>
